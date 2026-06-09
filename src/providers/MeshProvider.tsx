@@ -36,12 +36,16 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
   const addFile = useMeshStore((state) => state.addFile);
 
   useEffect(() => {
-    // Initialize Socket.io connection
-    const socket = io();
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    const socket = socketUrl ? io(socketUrl) : io();
     socketRef.current = socket;
 
     socket.on("connect", () => {
       console.log("Connected to signaling server as:", socket.id);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection failed:", err.message);
     });
 
     socket.on("device:joined", async ({ id }) => {
