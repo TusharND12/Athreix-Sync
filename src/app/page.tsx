@@ -329,6 +329,12 @@ const Footer = () => (
           <span className="display text-lg tracking-[0.18em]">ATHREIXSYNC</span>
         </div>
         <p className="text-white/50 text-sm max-w-xs">The intelligent, spatial, and secure file sharing network for the future.</p>
+        <div className="mt-8 pt-6 border-t border-white/5 max-w-sm">
+          <p className="text-white/40 text-xs leading-relaxed">
+            Developed by <a href="https://www.athreix.com/" target="_blank" rel="noreferrer" className="text-[var(--lava-300)] font-medium hover:text-[var(--lava-100)] transition-colors">Athreix.com AI Automation Studio</a>.<br/>
+            We build custom agents, AI SaaS platforms, internal tools, and production-grade ML for teams that move fast.
+          </p>
+        </div>
       </div>
       <div className="flex gap-16">
         <div className="flex flex-col gap-3">
