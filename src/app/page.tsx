@@ -49,10 +49,10 @@ function Starfield(props: any) {
 const NavBar = () => (
   <nav className="fixed top-0 left-0 right-0 z-50 glass border-b-0 border-white/5 py-4 px-6 md:px-12 flex items-center justify-between">
     <div className="flex items-center gap-2">
-      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00f0ff] to-[#8a2be2] flex items-center justify-center">
+      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center">
         <Network className="w-4 h-4 text-white" />
       </div>
-      <span className="text-xl font-bold tracking-tight">AthreixSync</span>
+      <span className="display text-xl font-bold tracking-[0.18em]">ATHREIXSYNC</span>
     </div>
     
     <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
@@ -82,7 +82,7 @@ const Hero = () => {
         </Canvas>
       </div>
 
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-[#050505]/80 to-[#050505] z-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#ff5b1f]/20 via-[#0a0a0d]/80 to-[#0a0a0d] z-10 pointer-events-none" />
 
       <div className="relative z-20 text-center px-4 max-w-5xl mx-auto flex flex-col items-center">
         <motion.div
@@ -91,19 +91,19 @@ const Hero = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8"
         >
-          <span className="w-2 h-2 rounded-full bg-[#00f0ff] animate-pulse" />
-          <span className="text-xs font-medium text-white/80 uppercase tracking-wider">AthreixSync v1.0 Launching Soon</span>
+          <span className="w-2 h-2 rounded-full bg-[var(--lava-300)] pulse-dot" />
+          <span className="mono text-[10px] text-white/80 uppercase tracking-[0.2em]">ATHREIXSYNC V1.0 LAUNCHING SOON</span>
         </motion.div>
 
         <motion.h1 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-          className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter leading-[1.1] mb-6"
+          className="display text-5xl md:text-7xl lg:text-8xl leading-[0.95] mb-6"
         >
-          Share at the speed <br className="hidden md:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-[#8a2be2] to-[#e0aaff]">
-            of thought.
+          SHARE AT THE SPEED <br className="hidden md:block" />
+          <span className="text-lava-gradient">
+            OF THOUGHT.
           </span>
         </motion.h1>
 
@@ -111,9 +111,9 @@ const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="text-lg md:text-xl text-white/60 max-w-2xl mb-10 leading-relaxed font-light"
+          className="mono text-xs md:text-sm text-white/60 max-w-2xl mb-10 leading-relaxed uppercase tracking-[0.2em]"
         >
-          The world's first intent-driven, AI-native file sharing ecosystem. No links. No uploads. No friction. Just point, think, and transfer.
+          THE WORLD'S FIRST INTENT-DRIVEN, AI-NATIVE FILE SHARING ECOSYSTEM. NO LINKS. NO UPLOADS. NO FRICTION. JUST POINT, THINK, AND TRANSFER.
         </motion.p>
 
         <motion.div 
@@ -123,7 +123,7 @@ const Hero = () => {
           className="flex flex-col sm:flex-row items-center gap-4"
         >
           <Link href="/dashboard">
-            <button className="h-14 px-8 rounded-full bg-white text-black font-semibold text-lg hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)] flex items-center gap-2 group">
+            <button className="btn-glow h-14 px-8 rounded-full bg-white text-black font-semibold text-lg flex items-center gap-2 group display tracking-widest">
               Open Web App
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -153,11 +153,11 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: any) => (
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-100px" }}
     transition={{ duration: 0.5, delay }}
-    className="glass-card p-8 rounded-3xl relative overflow-hidden group hover:border-[#8a2be2]/50 transition-colors"
+    className="glass-card p-8 rounded-3xl relative overflow-hidden group hover:border-[#ff5b1f]/50 transition-colors"
   >
-    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#8a2be2]/20 to-transparent rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#00f0ff]/20 transition-colors duration-700" />
-    <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center mb-6 relative z-10 border border-white/10 group-hover:border-[#00f0ff]/50 transition-colors">
-      <Icon className="w-6 h-6 text-white" />
+    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#ff5b1f]/20 to-transparent rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#ff9a4a]/20 transition-colors duration-700" />
+    <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center mb-6 relative z-10 border border-white/10 group-hover:border-[#ff9a4a]/50 transition-colors">
+      <Icon className="w-6 h-6 text-[var(--lava-300)]" />
     </div>
     <h3 className="text-xl font-semibold mb-3 text-white">{title}</h3>
     <p className="text-white/60 leading-relaxed font-light">{description}</p>
@@ -201,7 +201,7 @@ const Features = () => {
   return (
     <section id="features" className="py-32 px-4 md:px-12 max-w-7xl mx-auto relative z-20">
       <div className="text-center mb-20">
-        <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-6">File sharing, <span className="text-gradient">reimagined.</span></h2>
+        <h2 className="display text-3xl md:text-5xl tracking-[0.18em] mb-6">FILE SHARING, <span className="text-lava-gradient">REIMAGINED.</span></h2>
         <p className="text-lg text-white/50 max-w-2xl mx-auto">We ripped out the friction of URLs, permissions, and uploads to build a system that moves at the speed of thought.</p>
       </div>
 
@@ -219,13 +219,13 @@ const AIPromo = () => {
     <section className="py-32 px-4 relative z-20 border-y border-white/5 bg-[#0a0a0f]">
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
         <div className="flex-1 space-y-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-sm font-medium">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--lava-300)]/30 bg-[var(--lava-300)]/10 text-[var(--lava-300)] text-sm font-medium">
             <Cpu className="w-4 h-4" />
             Core Intelligence
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-            An assistant that <br/>
-            <span className="text-gradient-purple">never forgets.</span>
+          <h2 className="display text-4xl md:text-5xl leading-tight">
+            AN ASSISTANT THAT <br/>
+            <span className="text-lava-gradient">NEVER FORGETS.</span>
           </h2>
           <p className="text-lg text-white/60 font-light leading-relaxed">
             AthreixSync indexes every file, conversation, and context. Just ask, "Show me the PDF I sent to Rahul before the marketing event," and it appears instantly.
@@ -233,8 +233,8 @@ const AIPromo = () => {
           <ul className="space-y-4">
             {["Semantic Search", "Auto-Categorization", "Duplicate Detection", "Content Summarization"].map((item, i) => (
               <li key={i} className="flex items-center gap-3 text-white/80">
-                <div className="w-6 h-6 rounded-full bg-[#8a2be2]/20 flex items-center justify-center border border-[#8a2be2]/50">
-                  <div className="w-2 h-2 rounded-full bg-[#8a2be2]" />
+                <div className="w-6 h-6 rounded-full bg-[var(--lava-300)]/20 flex items-center justify-center border border-[var(--lava-300)]/50">
+                  <div className="w-2 h-2 rounded-full bg-[var(--lava-300)]" />
                 </div>
                 {item}
               </li>
@@ -243,9 +243,9 @@ const AIPromo = () => {
         </div>
         
         <div className="flex-1 w-full max-w-md relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#00f0ff]/20 to-[#8a2be2]/20 blur-3xl -z-10 rounded-full" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--lava-400)]/20 to-[var(--lava-300)]/20 blur-3xl -z-10 rounded-full" />
           <div className="glass-card rounded-3xl p-6 border border-white/10 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00f0ff] to-[#8a2be2]" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ff5b1f] to-[#ff9a4a]" />
             <div className="space-y-6">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-full bg-white/10 flex-shrink-0" />
@@ -254,10 +254,10 @@ const AIPromo = () => {
                 </div>
               </div>
               <div className="flex items-start gap-4 flex-row-reverse">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00f0ff] to-[#8a2be2] flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center flex-shrink-0">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
-                <div className="glass px-4 py-3 rounded-2xl rounded-tr-sm border border-purple-500/30 bg-purple-500/5">
+                <div className="glass px-4 py-3 rounded-2xl rounded-tr-sm border border-[var(--lava-300)]/30 bg-[var(--lava-300)]/5">
                   <div className="text-sm text-white/90 mb-3">Found it in the Product Zone.</div>
                   <div className="flex items-center gap-3 p-2 bg-black/40 rounded-xl border border-white/10">
                     <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
@@ -281,7 +281,7 @@ const AIPromo = () => {
 const Security = () => (
   <section id="security" className="py-32 px-4 max-w-5xl mx-auto relative z-20 text-center">
     <Shield className="w-16 h-16 text-white/20 mx-auto mb-8" />
-    <h2 className="text-3xl md:text-5xl font-bold mb-6">Zero Knowledge. <br/><span className="text-white/40">Absolute Control.</span></h2>
+    <h2 className="display text-3xl md:text-5xl mb-6 tracking-[0.1em]">ZERO KNOWLEDGE. <br/><span className="text-[var(--lava-300)]/60">ABSOLUTE CONTROL.</span></h2>
     <p className="text-lg text-white/50 max-w-2xl mx-auto mb-12">
       Your files are encrypted on your device before they ever touch the network. Only you and your intended recipients hold the keys. Not even we can see what you share.
     </p>
@@ -298,10 +298,10 @@ const Footer = () => (
     <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#00f0ff] to-[#8a2be2] flex items-center justify-center">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center">
             <Network className="w-3 h-3 text-white" />
           </div>
-          <span className="text-lg font-bold">AthreixSync</span>
+          <span className="display text-lg tracking-[0.18em]">ATHREIXSYNC</span>
         </div>
         <p className="text-white/50 text-sm max-w-xs">The intelligent, spatial, and secure file sharing network for the future.</p>
       </div>

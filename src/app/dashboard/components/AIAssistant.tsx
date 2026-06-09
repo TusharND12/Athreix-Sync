@@ -109,9 +109,9 @@ export const AIAssistantBar = () => {
 
   return (
     <div className="relative max-w-2xl mx-auto w-full group">
-      <div className="absolute -inset-1 bg-gradient-to-r from-[#00f0ff] to-[#8a2be2] rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000" />
+      <div className="absolute -inset-1 bg-gradient-to-r from-[#ff5b1f] to-[#ff9a4a] rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000" />
       <div className="relative flex items-center bg-[#101015] border border-white/10 rounded-full px-6 py-4 shadow-2xl">
-        <Cpu className="w-5 h-5 text-[#00f0ff] animate-pulse mr-4" />
+        <Cpu className="w-5 h-5 text-[var(--lava-300)] pulse-dot mr-4" />
         <input 
           type="text" 
           value={input}

@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: '--font-sans' });
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: '--font-mono' });
+const outfit = Outfit({ subsets: ["latin"], variable: '--font-display' });
 
 export const metadata: Metadata = {
-  title: "AthreixSync | Share Like The Future Is Already Here",
-  description: "The world's smartest, fastest, and most futuristic file sharing ecosystem where files move seamlessly between people, devices, and teams using AI, peer-to-peer networking, and spatial computing concepts.",
+  title: "AthreixSync | AI Automation Studio",
+  description: "An AI automation studio building custom agents, AI SaaS platforms, internal tools, and production-grade ML for teams that move fast.",
 };
 
 export default function RootLayout({
@@ -16,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen antialiased bg-[#050505] selection:bg-purple-500/30`}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} ${outfit.variable} ${inter.className} min-h-screen antialiased bg-[#0a0a0d] selection:bg-[#ff5b1f]/30`}>
         {children}
       </body>
     </html>

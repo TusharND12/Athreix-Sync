@@ -4,17 +4,27 @@
   --color-background: #050505;
   --color-foreground: #ffffff;
   
-  --color-primary: #8a2be2;
+  --color-lava-50: #fff0eb;
+  --color-lava-100: #ffd8cc;
+  --color-lava-200: #ffb7a3;
+  --color-lava-300: #ff9a4a;
+  --color-lava-400: #ff5b1f;
+  --color-lava-500: #e63e00;
+  --color-lava-600: #cc3100;
+  --color-lava-700: #992000;
+  --color-lava-800: #661200;
+  --color-lava-900: #330600;
+
+  --color-gr-100: #0a0a0d;
+
+  --color-primary: var(--color-lava-400);
   --color-primary-foreground: #ffffff;
   
-  --color-secondary: #1a1a2e;
+  --color-secondary: var(--color-gr-100);
   --color-secondary-foreground: #a0a0b0;
 
-  --color-accent: #00f0ff;
+  --color-accent: var(--color-lava-300);
   --color-accent-foreground: #000000;
-  
-  --color-destructive: #ff3366;
-  --color-destructive-foreground: #ffffff;
   
   --color-muted: #111111;
   --color-muted-foreground: #888888;
@@ -27,7 +37,7 @@
 
   --color-border: rgba(255, 255, 255, 0.1);
   --color-input: rgba(255, 255, 255, 0.05);
-  --color-ring: rgba(138, 43, 226, 0.5);
+  --color-ring: rgba(255, 91, 31, 0.5);
 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -38,6 +48,7 @@
   
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+  --font-display: "Outfit", system-ui, sans-serif;
 }
 
 @layer base {
@@ -58,33 +69,88 @@
 }
 
 @layer utilities {
+  .display {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+  }
+
   .glass {
-    background: rgba(15, 15, 20, 0.4);
+    background: rgba(10, 10, 13, 0.6);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
   }
   
   .glass-card {
-    background: linear-gradient(145deg, rgba(30, 30, 40, 0.6) 0%, rgba(15, 15, 20, 0.4) 100%);
+    background: linear-gradient(145deg, rgba(20, 20, 25, 0.8) 0%, rgba(10, 10, 13, 0.6) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
-  .text-gradient {
-    background: linear-gradient(to right, #00f0ff, #8a2be2);
+  .text-lava-gradient {
+    background: linear-gradient(to right, #ff5b1f, #ff9a4a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .text-gradient-purple {
-    background: linear-gradient(to right, #e0aaff, #8a2be2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .noise {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite linear;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .pulse-dot {
+    animation: pulse-glow 2s infinite ease-in-out;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px 2px rgba(255, 91, 31, 0.4); }
+    50% { opacity: 0.5; box-shadow: 0 0 2px 0 rgba(255, 91, 31, 0.1); }
+  }
+
+  .btn-glow {
+    box-shadow: 0 0 15px 0 rgba(255, 91, 31, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .btn-glow:hover {
+    box-shadow: 0 0 25px 5px rgba(255, 91, 31, 0.4);
+  }
+
+  .gradient-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: 0;
+    pointer-events: none;
   }
 }
