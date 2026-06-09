@@ -43,6 +43,7 @@ interface MeshState {
   clipboardText: string | null;
   userName: string;
   addDevice: (device: Device) => void;
+  updateDeviceName: (id: string, name: string) => void;
   removeDevice: (id: string) => void;
   addFile: (file: FileState) => void;
   removeFile: (id: string) => void;
@@ -67,6 +68,9 @@ export const useMeshStore = create<MeshState>((set) => ({
     if (state.devices.find(d => d.id === device.id)) return state;
     return { devices: [...state.devices, device] };
   }),
+  updateDeviceName: (id, name) => set((state) => ({
+    devices: state.devices.map(d => d.id === id ? { ...d, name } : d)
+  })),
   removeDevice: (id) => set((state) => ({
     devices: state.devices.filter(d => d.id !== id)
   })),

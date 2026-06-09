@@ -347,7 +347,7 @@ const EphemeralViewerModal = () => {
   );
 };
 
-const SettingsModal = ({ show, onClose }: { show: boolean, onClose: () => void }) => {
+const SettingsModal = ({ show, onClose, onSave }: { show: boolean, onClose: () => void, onSave: (name: string) => void }) => {
   const userName = useMeshStore((state) => state.userName);
   const setUserName = useMeshStore((state) => state.setUserName);
   const [tempName, setTempName] = useState(userName);
@@ -394,7 +394,9 @@ const SettingsModal = ({ show, onClose }: { show: boolean, onClose: () => void }
           </button>
           <button 
             onClick={() => {
-              setUserName(tempName || "Anonymous Node");
+              const newName = tempName || "Anonymous Node";
+              setUserName(newName);
+              onSave(newName);
               onClose();
             }}
             className="flex-1 py-2.5 bg-[var(--lava-500)] hover:bg-[var(--lava-400)] text-white shadow-[0_0_15px_rgba(255,91,31,0.3)] rounded-xl transition-all font-medium"
@@ -422,7 +424,7 @@ export default function Dashboard() {
   const clipboardText = useMeshStore((state) => state.clipboardText);
   const markNotificationsRead = useMeshStore((state) => state.markNotificationsRead);
   const addFile = useMeshStore((state) => state.addFile);
-  const { requestFileTransfer, broadcastClipboard } = useMesh();
+  const { requestFileTransfer, broadcastClipboard, broadcastName } = useMesh();
 
   // Phase 1: Ephemeral Toggle state
   const [isEphemeral, setIsEphemeral] = useState(false);
@@ -514,7 +516,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#050505] flex">
       <IncomingTransferModal />
       <EphemeralViewerModal />
-      <SettingsModal show={showSettings} onClose={() => setShowSettings(false)} />
+      <SettingsModal show={showSettings} onClose={() => setShowSettings(false)} onSave={broadcastName} />
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div 

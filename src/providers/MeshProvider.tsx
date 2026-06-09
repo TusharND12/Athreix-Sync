@@ -10,6 +10,7 @@ interface MeshContextType {
   requestFileTransfer: (targetId: string, file: File, isEphemeral?: boolean) => void;
   respondToFileRequest: (senderId: string, fileId: string, accepted: boolean) => void;
   broadcastClipboard: (text: string) => void;
+  broadcastName: (name: string) => void;
 }
 
 const MeshContext = createContext<MeshContextType>({ 
@@ -17,7 +18,8 @@ const MeshContext = createContext<MeshContextType>({
   sendFile: () => {},
   requestFileTransfer: () => {},
   respondToFileRequest: () => {},
-  broadcastClipboard: () => {}
+  broadcastClipboard: () => {},
+  broadcastName: () => {}
 });
 
 export const useMesh = () => useContext(MeshContext);
@@ -173,6 +175,11 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
   const setupDataChannel = (dc: RTCDataChannel, targetId: string) => {
     dc.binaryType = "arraybuffer";
 
+    dc.onopen = () => {
+      // Broadcast our current name to the new peer
+      dc.send(JSON.stringify({ type: "name_update", name: useMeshStore.getState().userName }));
+    };
+
     let receivingMetadata: any = null;
     let receivedBuffers: ArrayBuffer[] = [];
     let receivedSize = 0;
@@ -188,6 +195,9 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
           } catch (e) {
             console.error("Clipboard write failed", e);
           }
+          return;
+        } else if (parsed.type === "name_update") {
+          useMeshStore.getState().updateDeviceName(targetId, parsed.name);
           return;
         } else {
           // File metadata
@@ -296,15 +306,25 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const broadcastClipboard = (text: string) => {
+    const message = JSON.stringify({ type: "clipboard", data: text });
     Object.values(dataChannelsRef.current).forEach(dc => {
       if (dc.readyState === "open") {
-        dc.send(JSON.stringify({ type: "clipboard", data: text }));
+        dc.send(message);
+      }
+    });
+  };
+
+  const broadcastName = (name: string) => {
+    const message = JSON.stringify({ type: "name_update", name });
+    Object.values(dataChannelsRef.current).forEach(dc => {
+      if (dc.readyState === "open") {
+        dc.send(message);
       }
     });
   };
 
   return (
-    <MeshContext.Provider value={{ socket: socketRef.current, requestFileTransfer, respondToFileRequest, sendFile, broadcastClipboard }}>
+    <MeshContext.Provider value={{ socket: socketRef.current, sendFile, requestFileTransfer, respondToFileRequest, broadcastClipboard, broadcastName }}>
       {children}
     </MeshContext.Provider>
   );
