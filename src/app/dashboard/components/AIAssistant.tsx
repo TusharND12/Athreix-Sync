@@ -110,15 +110,15 @@ export const AIAssistantBar = () => {
   return (
     <div className="relative max-w-2xl mx-auto w-full group">
       <div className="absolute -inset-1 bg-gradient-to-r from-[#ff5b1f] to-[#ff9a4a] rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000" />
-      <div className="relative flex items-center bg-[#101015] border border-white/10 rounded-full px-6 py-4 shadow-2xl">
-        <Cpu className="w-5 h-5 text-[var(--lava-300)] pulse-dot mr-4" />
+      <div className="relative flex items-center bg-[#101015] border border-white/10 rounded-full px-4 md:px-6 py-3 md:py-4 shadow-2xl gap-2 md:gap-0">
+        <Cpu className="w-4 h-4 md:w-5 md:h-5 text-[var(--lava-300)] pulse-dot shrink-0 md:mr-4" />
         <input 
           type="text" 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleCommand}
-          placeholder="Type to share... (e.g., 'send presentation to Node_...')"
-          className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-white/30 text-lg font-light"
+          placeholder="Type to share..."
+          className="flex-1 min-w-0 bg-transparent border-none outline-none text-white placeholder:text-white/30 text-sm md:text-lg font-light"
         />
         <div className="flex items-center gap-2 text-white/40">
           <kbd className="hidden md:inline-block px-2 py-1 rounded bg-white/5 text-xs border border-white/10 font-mono">↵ Enter</kbd>

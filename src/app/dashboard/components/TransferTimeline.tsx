@@ -51,11 +51,11 @@ const TransferRow = ({ transfer }: { transfer: ActiveTransfer }) => {
       initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.98 }}
-      className="glass-card rounded-2xl p-4 border border-white/10"
+      className="glass-card rounded-2xl p-3 md:p-4 border border-white/10"
     >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
+      <div className="flex items-center justify-between gap-2 md:gap-3 mb-3">
+        <div className="flex items-center gap-2.5 md:gap-3 min-w-0 flex-1">
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
             {statusIcon}
           </div>
           <div className="min-w-0">
@@ -85,11 +85,11 @@ const TransferRow = ({ transfer }: { transfer: ActiveTransfer }) => {
         )}
       </div>
 
-      <div className="flex items-center justify-between text-[11px] text-white/40 font-mono">
-        <span>
+      <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:justify-between text-[10px] md:text-[11px] text-white/40 font-mono">
+        <span className="truncate max-w-full">
           {formatBytes(transfer.bytesTransferred)} / {formatBytes(transfer.fileSize)}
         </span>
-        <span className="flex items-center gap-3">
+        <span className="flex items-center gap-2 md:gap-3 shrink-0">
           {transfer.status === "transferring" && (
             <span>{formatSpeed(transfer.speedBps)}</span>
           )}
@@ -106,10 +106,10 @@ export const TransferTimeline = () => {
   if (activeTransfers.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 left-4 md:left-auto md:w-[400px] z-[60] pointer-events-none">
+    <div className="fixed bottom-3 right-3 left-3 md:bottom-4 md:right-4 md:left-auto md:w-[400px] z-[60] pointer-events-none pb-[env(safe-area-inset-bottom)]">
       <div className="pointer-events-auto">
-        <div className="flex items-center gap-2 mb-3 px-1">
-          <div className="w-2 h-2 rounded-full bg-[var(--lava-300)] pulse-dot" />
+        <div className="flex items-center gap-2 mb-2 md:mb-3 px-1">
+          <div className="w-2 h-2 rounded-full bg-[var(--lava-300)] pulse-dot shrink-0" />
           <span className="text-xs uppercase tracking-widest text-white/60 font-mono">
             Active Transfers ({activeTransfers.length})
           </span>

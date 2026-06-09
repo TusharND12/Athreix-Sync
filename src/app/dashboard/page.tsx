@@ -49,13 +49,13 @@ const FileCard = ({ file, delay }: { file: any, delay: number }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="glass-card p-5 rounded-2xl hover:border-[var(--lava-300)]/50 transition-all group cursor-pointer"
+      className="glass-card p-4 md:p-5 rounded-2xl hover:border-[var(--lava-300)]/50 transition-all group cursor-pointer"
     >
-      <div className="flex justify-between items-start mb-12">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/5">
-          <Icon className="w-6 h-6 text-white" />
+      <div className="flex justify-between items-center mb-4 md:mb-12">
+        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-white/5 shrink-0">
+          <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
         </div>
-        <button className="text-white/30 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
+        <button className="text-white/30 hover:text-white transition-colors md:opacity-0 md:group-hover:opacity-100 shrink-0 flex items-center justify-center w-8 h-8">
           <MoreVertical className="w-5 h-5" />
         </button>
       </div>
@@ -99,18 +99,18 @@ const EmptyState = ({ message, showActions }: { message: string, showActions?: b
   const addFile = useMeshStore((state) => state.addFile);
   
   return (
-    <div className="w-full py-16 flex flex-col items-center justify-center text-white/30 border border-dashed border-white/10 rounded-2xl">
-      <Network className="w-12 h-12 mb-4 opacity-50" />
-      <p className="mb-8 text-center px-4">{message}</p>
+    <div className="w-full py-10 md:py-16 flex flex-col items-center justify-center text-white/30 border border-dashed border-white/10 rounded-2xl px-4">
+      <Network className="w-10 h-10 md:w-12 md:h-12 mb-3 md:mb-4 opacity-50" />
+      <p className="mb-6 md:mb-8 text-center text-sm md:text-base">{message}</p>
       
       {showActions && (
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="grid grid-cols-2 gap-3 w-full max-w-xs md:max-w-none md:flex md:flex-wrap md:justify-center md:gap-4">
           <button 
             onClick={() => alert("Scanning local network for unlinked Athreix Sync nodes...")}
-            className="flex flex-col items-center justify-center w-32 h-32 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-colors text-white/70 hover:text-white group"
+            className="flex flex-col items-center justify-center h-24 md:w-32 md:h-32 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-colors text-white/70 hover:text-white group"
           >
-            <Search className="w-8 h-8 mb-2 group-hover:text-[var(--lava-300)] transition-colors" />
-            <span className="text-sm font-medium">Scan Network</span>
+            <Search className="w-6 h-6 md:w-8 md:h-8 mb-1.5 md:mb-2 group-hover:text-[var(--lava-300)] transition-colors shrink-0" />
+            <span className="text-xs md:text-sm font-medium text-center">Scan Network</span>
           </button>
           
           <button 
@@ -125,18 +125,18 @@ const EmptyState = ({ message, showActions }: { message: string, showActions?: b
                 timestamp: Date.now()
               });
             }}
-            className="flex flex-col items-center justify-center w-32 h-32 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-colors text-white/70 hover:text-white group"
+            className="flex flex-col items-center justify-center h-24 md:w-32 md:h-32 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-colors text-white/70 hover:text-white group"
           >
-            <FilePlus className="w-8 h-8 mb-2 group-hover:text-[var(--lava-400)] transition-colors" />
-            <span className="text-sm font-medium">Create File</span>
+            <FilePlus className="w-6 h-6 md:w-8 md:h-8 mb-1.5 md:mb-2 group-hover:text-[var(--lava-400)] transition-colors shrink-0" />
+            <span className="text-xs md:text-sm font-medium text-center">Create File</span>
           </button>
           
           <button 
             onClick={() => alert("Connecting to Cloud Provider... (Mock Feature)")}
-            className="flex flex-col items-center justify-center w-32 h-32 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-colors text-white/70 hover:text-white group"
+            className="flex flex-col items-center justify-center h-24 md:w-32 md:h-32 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-colors text-white/70 hover:text-white group col-span-2 md:col-span-1"
           >
-            <Cloud className="w-8 h-8 mb-2 group-hover:text-[var(--lava-500)] transition-colors" />
-            <span className="text-sm font-medium">Cloud Sync</span>
+            <Cloud className="w-6 h-6 md:w-8 md:h-8 mb-1.5 md:mb-2 group-hover:text-[var(--lava-500)] transition-colors shrink-0" />
+            <span className="text-xs md:text-sm font-medium text-center">Cloud Sync</span>
           </button>
         </div>
       )}
@@ -149,7 +149,7 @@ const EmptyState = ({ message, showActions }: { message: string, showActions?: b
 const FileGrid = ({ files, emptyMessage, showActions }: { files: any[], emptyMessage: string, showActions?: boolean }) => {
   if (files.length === 0) return <EmptyState message={emptyMessage} showActions={showActions} />;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mt-4 md:mt-8">
       {files.map((file, i) => <FileCard key={file.id} file={file} delay={i * 0.1} />)}
     </div>
   );
@@ -181,16 +181,16 @@ const DeviceSyncView = ({ onTriggerSend }: { onTriggerSend?: (file: File, target
 
   if (devices.length === 0) {
     return (
-      <div className="w-full py-16 flex flex-col items-center justify-center text-white/30 border border-dashed border-white/10 rounded-2xl">
-        <Network className="w-12 h-12 mb-4 opacity-50" />
-        <p>No devices connected in the mesh network.</p>
-        <p className="text-sm mt-2 opacity-60">Open Athreix Sync on any device — same WiFi or different networks worldwide.</p>
+      <div className="w-full py-10 md:py-16 flex flex-col items-center justify-center text-white/30 border border-dashed border-white/10 rounded-2xl px-4 text-center">
+        <Network className="w-10 h-10 md:w-12 md:h-12 mb-3 md:mb-4 opacity-50" />
+        <p className="text-sm md:text-base">No devices connected in the mesh network.</p>
+        <p className="text-xs md:text-sm mt-2 opacity-60 max-w-xs md:max-w-none">Open Athreix Sync on any device — same WiFi or different networks worldwide.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 mt-8">
+    <div className="space-y-3 md:space-y-4 mt-4 md:mt-8">
       {devices.map((device, i) => {
         const isExpanded = expandedDevice === device.id;
         const conn = device.connectionState ?? "connecting";
@@ -210,18 +210,18 @@ const DeviceSyncView = ({ onTriggerSend }: { onTriggerSend?: (file: File, target
             className="glass-card rounded-2xl overflow-hidden cursor-pointer hover:border-[var(--lava-300)]/50 transition-colors"
             onClick={() => setExpandedDevice(isExpanded ? null : device.id)}
           >
-            <div className="p-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-full ${connStyles.bg} flex items-center justify-center border ${connStyles.border}`}>
-                  <Activity className={`w-6 h-6 ${connStyles.icon} ${conn !== "failed" ? "animate-pulse" : ""}`} />
+            <div className="p-4 md:p-6 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${connStyles.bg} flex items-center justify-center border ${connStyles.border} shrink-0`}>
+                  <Activity className={`w-5 h-5 md:w-6 md:h-6 ${connStyles.icon} ${conn !== "failed" ? "animate-pulse" : ""}`} />
                 </div>
-                <div>
-                  <h4 className="text-white font-medium text-lg">{device.name}</h4>
-                  <p className="text-sm text-white/50">WebRTC • {connStyles.label}</p>
+                <div className="min-w-0">
+                  <h4 className="text-white font-medium text-base md:text-lg truncate">{device.name}</h4>
+                  <p className="text-xs md:text-sm text-white/50 truncate">WebRTC • {connStyles.label}</p>
                 </div>
               </div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs text-white/40 mb-1">Network</span>
+              <div className="flex flex-col items-end shrink-0">
+                <span className="text-[10px] md:text-xs text-white/40 mb-0.5">Network</span>
                 <span className="text-[var(--lava-300)] font-mono text-xs font-medium">
                   {conn === "relay" ? "TURN" : conn === "connected" ? "P2P" : conn === "connecting" ? "…" : "—"}
                 </span>
@@ -234,11 +234,11 @@ const DeviceSyncView = ({ onTriggerSend }: { onTriggerSend?: (file: File, target
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="bg-black/40 border-t border-white/10 px-6 py-4 flex gap-4"
+                  className="bg-black/40 border-t border-white/10 px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row gap-2 md:gap-4"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <label className="flex-1 py-3 bg-[var(--lava-400)]/20 hover:bg-[var(--lava-400)]/40 border border-[var(--lava-400)]/50 text-white rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors font-medium">
-                    <UploadCloud className="w-5 h-5" />
+                  <label className="flex-1 py-3 bg-[var(--lava-400)]/20 hover:bg-[var(--lava-400)]/40 border border-[var(--lava-400)]/50 text-white rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors font-medium text-sm md:text-base">
+                    <UploadCloud className="w-5 h-5 shrink-0" />
                     Send File
                     <input 
                       type="file" 
@@ -248,9 +248,9 @@ const DeviceSyncView = ({ onTriggerSend }: { onTriggerSend?: (file: File, target
                   </label>
                   <button 
                     onClick={() => alert(`Sent a ping to ${device.name} to request files! (Mock feature)`)}
-                    className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl flex items-center justify-center gap-2 transition-colors font-medium"
+                    className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl flex items-center justify-center gap-2 transition-colors font-medium text-sm md:text-base"
                   >
-                    <Share2 className="w-5 h-5" />
+                    <Share2 className="w-5 h-5 shrink-0" />
                     Request File
                   </button>
                 </motion.div>
@@ -293,18 +293,18 @@ const IncomingTransferModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="glass-card w-[400px] p-6 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center text-center"
+        className="glass-card w-full max-w-[400px] p-5 md:p-6 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center text-center"
       >
-        <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[var(--lava-400)] to-[var(--lava-300)] flex items-center justify-center mb-4">
-          <Share2 className="w-8 h-8 text-white" />
+        <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-tr from-[var(--lava-400)] to-[var(--lava-300)] flex items-center justify-center mb-4 shrink-0">
+          <Share2 className="w-7 h-7 md:w-8 md:h-8 text-white" />
         </div>
         <h3 className="text-xl font-bold text-white mb-2">Incoming File</h3>
-        <p className="text-white/60 mb-6">
-          <strong className="text-white">{request.senderName}</strong> wants to send you <br />
+        <p className="text-white/60 mb-6 text-sm md:text-base break-words">
+          <strong className="text-white">{request.senderName}</strong> wants to send you{" "}
           <strong className="text-white">"{request.fileName}"</strong> ({(request.fileSize / 1024 / 1024).toFixed(2)} MB)
         </p>
 
@@ -684,12 +684,12 @@ export default function Dashboard() {
 
       {/* Sidebar */}
       <div className={`w-64 border-r border-white/5 h-screen flex flex-col glass fixed left-0 top-0 z-50 transform transition-transform duration-300 md:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="p-6 flex items-center justify-between border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center">
+        <div className="p-4 md:p-6 flex items-center justify-between border-b border-white/5">
+          <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center shrink-0">
               <Network className="w-4 h-4 text-white" />
             </div>
-            <span className="display text-xl tracking-[0.18em] text-white">ATHREIXSYNC</span>
+            <span className="display text-sm md:text-xl tracking-[0.12em] md:tracking-[0.18em] text-white truncate">ATHREIXSYNC</span>
           </div>
           <button 
             className="md:hidden text-white/50 hover:text-white"
@@ -719,13 +719,13 @@ export default function Dashboard() {
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
             >
-              <item.icon className="w-5 h-5" />
+              <item.icon className="w-5 h-5 shrink-0" />
               <span className="font-medium text-sm">{item.label}</span>
             </button>
           ))}
         </div>
 
-        <div className="mt-auto p-6 border-t border-white/5 space-y-4">
+        <div className="mt-auto p-4 md:p-6 border-t border-white/5 space-y-4">
           <button 
             onClick={async () => {
               try {
@@ -736,9 +736,9 @@ export default function Dashboard() {
                 alert("Could not read clipboard. Please ensure HTTPS or localhost.");
               }
             }}
-            className="w-full py-3 bg-[var(--lava-300)]/10 hover:bg-[var(--lava-300)]/20 text-[var(--lava-300)] rounded-xl flex items-center justify-center gap-2 transition-all font-medium border border-[var(--lava-300)]/20"
+            className="w-full py-3 bg-[var(--lava-300)]/10 hover:bg-[var(--lava-300)]/20 text-[var(--lava-300)] rounded-xl flex items-center justify-center gap-2 transition-all font-medium border border-[var(--lava-300)]/20 text-sm md:text-base"
           >
-            <Copy className="w-4 h-4" />
+            <Copy className="w-4 h-4 shrink-0" />
             Broadcast Clipboard
           </button>
           
@@ -759,7 +759,7 @@ export default function Dashboard() {
       
       {/* Main Content */}
       <main 
-        className={`flex-1 md:ml-64 p-4 md:p-8 relative overflow-hidden transition-colors ${isDragging ? 'bg-[var(--lava-300)]/10' : ''} w-full`}
+        className={`flex-1 md:ml-64 p-3 md:p-8 pb-28 md:pb-8 relative overflow-hidden transition-colors ${isDragging ? 'bg-[var(--lava-300)]/10' : ''} w-full min-w-0`}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
         onDrop={handleDrop}
@@ -767,37 +767,37 @@ export default function Dashboard() {
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-[var(--lava-400)] opacity-10 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-20%] left-[20%] w-[500px] h-[500px] rounded-full bg-[var(--lava-300)] opacity-10 blur-[100px] pointer-events-none" />
 
-        <header className="flex items-center justify-between mb-12 relative z-40">
-          <div className="flex items-center gap-3">
+        <header className="flex items-center justify-between gap-2 mb-6 md:mb-12 relative z-40">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden w-10 h-10 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors"
+              className="md:hidden w-9 h-9 shrink-0 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div>
-              <h1 className="display text-2xl md:text-3xl text-white mb-1">{activeView}</h1>
+            <div className="min-w-0">
+              <h1 className="display text-xl md:text-3xl text-white mb-0 md:mb-1 truncate">{activeView}</h1>
               <p className="text-white/50 hidden md:block text-sm">
-                {activeView === "Device Sync" ? "Manage your real-time peer connections." : "Your files are synced securely across your devices."}
+                {activeView === "My Mesh" ? "Manage your real-time peer connections." : "Your files are synced securely across your devices."}
               </p>
             </div>
           </div>
-          <div className="flex gap-2 md:gap-4 relative">
+          <div className="flex items-center gap-1.5 md:gap-4 relative shrink-0">
             <button 
               onClick={() => setIsEphemeral(!isEphemeral)}
-              className={`px-3 md:px-4 py-2 rounded-xl flex items-center gap-2 transition-all font-bold text-sm ${
+              className={`w-9 h-9 md:w-auto md:h-auto md:px-4 md:py-2 rounded-xl flex items-center justify-center gap-2 transition-all font-bold text-sm shrink-0 ${
                 isEphemeral 
                   ? "bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] border border-red-400" 
                   : "glass text-white/50 hover:text-white"
               }`}
               title="Toggle 'Burn After Reading' mode for next upload"
             >
-              <ShieldAlert className="w-4 h-4" />
+              <ShieldAlert className="w-4 h-4 shrink-0" />
               <span className="hidden md:inline">{isEphemeral ? "Ephemeral ON" : "Ephemeral OFF"}</span>
             </button>
             <button 
               onClick={() => setShowSettings(true)}
-              className="w-10 h-10 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors"
+              className="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors"
             >
               <Settings className="w-5 h-5" />
             </button>
@@ -807,7 +807,7 @@ export default function Dashboard() {
                   setShowNotifications(!showNotifications);
                   if (showNotifications) markNotificationsRead();
                 }}
-                className="w-10 h-10 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors relative"
+                className="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors relative"
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
@@ -831,7 +831,7 @@ export default function Dashboard() {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-4 w-80 glass-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50"
+                      className="fixed md:absolute right-4 left-4 md:left-auto md:right-0 top-16 md:top-auto mt-0 md:mt-4 w-auto md:w-80 glass-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50"
                     >
                     <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
                       <h4 className="text-white font-medium">Notifications</h4>
@@ -865,11 +865,11 @@ export default function Dashboard() {
 
         <div className="relative z-10">
           <SocketStatus />
-          {activeView !== "Device Sync" && <AIAssistantBar />}
+          {activeView !== "My Mesh" && <AIAssistantBar />}
           
-          <div className="mt-16">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-medium text-white">
+          <div className="mt-6 md:mt-16">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h3 className="text-base md:text-lg font-medium text-white">
                 {activeView === "Recent" ? "Timeline" : "All Items"}
               </h3>
             </div>
@@ -877,14 +877,14 @@ export default function Dashboard() {
             {renderActiveView()}
           </div>
 
-          <div className="mt-12 glass p-6 rounded-2xl border border-white/5 flex items-center justify-between bg-gradient-to-r from-[#1a1a2e] to-transparent">
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-full ${devices.length > 0 ? 'bg-green-500/20 border-green-500/30' : 'bg-white/10 border-white/20'} flex items-center justify-center border`}>
-                <Network className={`w-6 h-6 ${devices.length > 0 ? 'text-green-400' : 'text-white/40'}`} />
+          <div className="mt-8 md:mt-12 glass p-4 md:p-6 rounded-2xl border border-white/5 flex items-start md:items-center justify-between bg-gradient-to-r from-[#1a1a2e] to-transparent">
+            <div className="flex items-start md:items-center gap-3 md:gap-4 min-w-0">
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full shrink-0 ${devices.length > 0 ? 'bg-green-500/20 border-green-500/30' : 'bg-white/10 border-white/20'} flex items-center justify-center border`}>
+                <Network className={`w-5 h-5 md:w-6 md:h-6 ${devices.length > 0 ? 'text-green-400' : 'text-white/40'}`} />
               </div>
-              <div>
-                <h4 className="text-white font-medium">Local Mesh Active</h4>
-                <p className="text-sm text-white/50">
+              <div className="min-w-0">
+                <h4 className="text-white font-medium text-sm md:text-base">Local Mesh Active</h4>
+                <p className="text-xs md:text-sm text-white/50 break-words">
                   {devices.length > 0 
                     ? `Connected to ${devices.length} peer(s): ${devices.map(d => d.name).join(", ")}. Ready for transfer.`
                     : "Waiting for peers to join the network. Open another browser tab to connect."}
