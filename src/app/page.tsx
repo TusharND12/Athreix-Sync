@@ -165,9 +165,6 @@ const Hero = () => {
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>
-          <button className="h-14 px-8 rounded-full glass font-medium text-lg hover:bg-white/10 transition-colors flex items-center gap-2">
-            Download for Mac
-          </button>
         </motion.div>
       </div>
 
