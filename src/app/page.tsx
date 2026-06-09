@@ -7,14 +7,14 @@ import { Points, PointMaterial } from "@react-three/drei";
 import * as random from "maath/random/dist/maath-random.esm";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { 
-  Share2, 
-  Globe, 
-  Shield, 
-  Zap, 
-  Cpu, 
-  Box, 
-  Network, 
+import {
+  Share2,
+  Globe,
+  Shield,
+  Zap,
+  Cpu,
+  Box,
+  Network,
   ArrowRight,
   Fingerprint,
   WifiOff,
@@ -64,7 +64,7 @@ const NavBar = () => {
           </div>
           <span className="display text-xl font-bold tracking-[0.18em]">ATHREIXSYNC</span>
         </div>
-        
+
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
           <a href="#features" className="hover:text-white transition-colors">Features</a>
           <a href="#mesh" className="hover:text-white transition-colors">Mesh Network</a>
@@ -81,7 +81,7 @@ const NavBar = () => {
           </button>
         </div>
 
-        <button 
+        <button
           className="md:hidden text-white/70 hover:text-white"
           onClick={() => setIsOpen(!isOpen)}
         >
@@ -92,7 +92,7 @@ const NavBar = () => {
       {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -133,10 +133,10 @@ const Hero = () => {
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8"
         >
           <span className="w-2 h-2 rounded-full bg-[var(--lava-300)] pulse-dot" />
-          <span className="mono text-[10px] text-white/80 uppercase tracking-[0.2em]">ATHREIXSYNC V1.0 LAUNCHING SOON</span>
+          <span className="mono text-[10px] text-white/80 uppercase tracking-[0.2em]">ATHREIXSYNC BUILD BY ATHREIX.COM</span>
         </motion.div>
 
-        <motion.h1 
+        <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
@@ -148,7 +148,7 @@ const Hero = () => {
           </span>
         </motion.h1>
 
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
@@ -157,7 +157,7 @@ const Hero = () => {
           THE WORLD'S FIRST INTENT-DRIVEN, AI-NATIVE FILE SHARING ECOSYSTEM. NO LINKS. NO UPLOADS. NO FRICTION. JUST POINT, THINK, AND TRANSFER.
         </motion.p>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
@@ -172,7 +172,7 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 2, delay: 1 }}
@@ -186,7 +186,7 @@ const Hero = () => {
 };
 
 const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: any) => (
-  <motion.div 
+  <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-100px" }}
@@ -262,7 +262,7 @@ const AIPromo = () => {
             Core Intelligence
           </div>
           <h2 className="display text-4xl md:text-5xl leading-tight">
-            AN ASSISTANT THAT <br/>
+            AN ASSISTANT THAT <br />
             <span className="text-lava-gradient">NEVER FORGETS.</span>
           </h2>
           <p className="text-lg text-white/60 font-light leading-relaxed">
@@ -279,28 +279,20 @@ const AIPromo = () => {
             ))}
           </ul>
         </div>
-        
+
         <div className="flex-1 w-full max-w-md relative group">
           <div className="absolute inset-0 bg-gradient-to-r from-[var(--lava-400)]/20 to-[var(--lava-300)]/20 blur-3xl -z-10 rounded-full group-hover:opacity-100 opacity-70 transition-opacity" />
           <a href="https://www.athreix.com/" target="_blank" rel="noreferrer" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
             <div className="glass-card rounded-3xl p-6 border border-white/10 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ff5b1f] to-[#ff9a4a]" />
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex-shrink-0" />
-                  <div className="glass px-4 py-3 rounded-2xl rounded-tl-sm text-sm text-white/90 border border-white/5 font-bold uppercase tracking-widest text-center flex items-center justify-center">
-                    BUILT BY
-                  </div>
+              <div className="flex flex-col items-center justify-center space-y-6 py-4">
+                <div className="glass px-8 py-3 rounded-2xl text-xl md:text-2xl text-white/90 border border-white/5 font-bold uppercase tracking-widest text-center inline-block">
+                  BUILT BY
                 </div>
-                <div className="flex items-start gap-4 flex-row-reverse">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="glass px-6 py-4 rounded-2xl rounded-tr-sm border border-[var(--lava-300)]/30 bg-[var(--lava-300)]/5 flex items-center justify-center">
-                    <span className="text-xl font-bold tracking-[0.3em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#ff5b1f] to-[#ff9a4a] animate-pulse">
-                      ATHREIX.COM
-                    </span>
-                  </div>
+                <div className="glass px-4 md:px-8 py-4 md:py-6 rounded-2xl border border-[var(--lava-300)]/30 bg-[var(--lava-300)]/5 flex items-center justify-center w-full shadow-[0_0_40px_-10px_rgba(255,91,31,0.2)]">
+                  <span className="text-xl sm:text-2xl md:text-3xl font-black tracking-[0.15em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#ff5b1f] to-[#ff9a4a] animate-pulse text-center whitespace-nowrap">
+                    ATHREIX.COM
+                  </span>
                 </div>
               </div>
             </div>
@@ -314,7 +306,7 @@ const AIPromo = () => {
 const Security = () => (
   <section id="security" className="py-32 px-4 max-w-5xl mx-auto relative z-20 text-center">
     <Shield className="w-16 h-16 text-white/20 mx-auto mb-8" />
-    <h2 className="display text-3xl md:text-5xl mb-6 tracking-[0.1em]">ZERO KNOWLEDGE. <br/><span className="text-[var(--lava-300)]/60">ABSOLUTE CONTROL.</span></h2>
+    <h2 className="display text-3xl md:text-5xl mb-6 tracking-[0.1em]">ZERO KNOWLEDGE. <br /><span className="text-[var(--lava-300)]/60">ABSOLUTE CONTROL.</span></h2>
     <p className="text-lg text-white/50 max-w-2xl mx-auto mb-12">
       Your files are encrypted on your device before they ever touch the network. Only you and your intended recipients hold the keys. Not even we can see what you share.
     </p>
