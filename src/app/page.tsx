@@ -52,6 +52,138 @@ function Starfield(props: any) {
   );
 }
 
+function NeuralNetwork() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationId: number;
+    let width = 0;
+    let height = 0;
+
+    interface Node {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+      pulse: number;
+      pulseSpeed: number;
+    }
+
+    const nodes: Node[] = [];
+    const nodeCount = 60;
+    const connectionDistance = 180;
+
+    const resize = () => {
+      width = canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      height = canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+
+    const initNodes = () => {
+      nodes.length = 0;
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      for (let i = 0; i < nodeCount; i++) {
+        nodes.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          radius: Math.random() * 2 + 1,
+          pulse: Math.random() * Math.PI * 2,
+          pulseSpeed: 0.02 + Math.random() * 0.03,
+        });
+      }
+    };
+
+    const draw = () => {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      ctx.clearRect(0, 0, w, h);
+
+      // Update positions
+      for (const node of nodes) {
+        node.x += node.vx;
+        node.y += node.vy;
+        node.pulse += node.pulseSpeed;
+
+        if (node.x < 0 || node.x > w) node.vx *= -1;
+        if (node.y < 0 || node.y > h) node.vy *= -1;
+      }
+
+      // Draw connections
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < connectionDistance) {
+            const opacity = (1 - dist / connectionDistance) * 0.15;
+            const pulseGlow = (Math.sin(nodes[i].pulse) + 1) * 0.5;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = `rgba(255, 91, 31, ${opacity + pulseGlow * 0.05})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw nodes
+      for (const node of nodes) {
+        const glow = (Math.sin(node.pulse) + 1) * 0.5;
+        const r = node.radius + glow * 1.5;
+
+        // Outer glow
+        const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, r * 4);
+        gradient.addColorStop(0, `rgba(255, 91, 31, ${0.15 + glow * 0.1})`);
+        gradient.addColorStop(1, "rgba(255, 91, 31, 0)");
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Core dot
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 154, 74, ${0.5 + glow * 0.5})`;
+        ctx.fill();
+      }
+
+      animationId = requestAnimationFrame(draw);
+    };
+
+    resize();
+    initNodes();
+    draw();
+
+    window.addEventListener("resize", () => {
+      resize();
+      initNodes();
+    });
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full"
+      style={{ opacity: 0.5 }}
+    />
+  );
+}
+
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -65,21 +197,9 @@ const NavBar = () => {
           <span className="display text-xl font-bold tracking-[0.18em]">ATHREIXSYNC</span>
         </div>
 
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-          <a href="#features" className="hover:text-white transition-colors">Features</a>
-          <a href="#mesh" className="hover:text-white transition-colors">Mesh Network</a>
-          <a href="#security" className="hover:text-white transition-colors">Security</a>
-          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-        </div>
 
-        <div className="hidden md:flex items-center gap-4">
-          <button className="text-sm font-medium hover:text-white text-white/70 transition-colors">
-            Log in
-          </button>
-          <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-semibold hover:bg-white/90 transition-transform active:scale-95">
-            Get Early Access
-          </button>
-        </div>
+
+
 
         <button
           className="md:hidden text-white/70 hover:text-white"
@@ -98,15 +218,8 @@ const NavBar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden pt-4 mt-4 border-t border-white/10 flex flex-col gap-4 overflow-hidden"
           >
-            <a href="#features" className="text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Features</a>
-            <a href="#mesh" className="text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Mesh Network</a>
-            <a href="#security" className="text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Security</a>
-            <a href="#pricing" className="text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Pricing</a>
-            <hr className="border-white/10" />
-            <button className="text-left text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Log in</button>
-            <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-semibold hover:bg-white/90 transition-transform active:scale-95 text-center" onClick={() => setIsOpen(false)}>
-              Get Early Access
-            </button>
+
+
           </motion.div>
         )}
       </AnimatePresence>
@@ -121,6 +234,10 @@ const Hero = () => {
         <Canvas camera={{ position: [0, 0, 1] }}>
           <Starfield />
         </Canvas>
+      </div>
+
+      <div className="absolute inset-0 z-[1]">
+        <NeuralNetwork />
       </div>
 
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#ff5b1f]/20 via-[#0a0a0d]/80 to-[#0a0a0d] z-10 pointer-events-none" />
@@ -334,20 +451,6 @@ const Footer = () => (
             Developed by <a href="https://www.athreix.com/" target="_blank" rel="noreferrer" className="text-[var(--lava-300)] font-medium hover:text-[var(--lava-100)] transition-colors">Athreix.com AI Automation Studio</a>.<br/>
             We build custom agents, AI SaaS platforms, internal tools, and production-grade ML for teams that move fast.
           </p>
-        </div>
-      </div>
-      <div className="flex gap-16">
-        <div className="flex flex-col gap-3">
-          <span className="font-semibold text-white mb-2">Product</span>
-          <a href="#" className="text-sm text-white/60 hover:text-white">Download</a>
-          <a href="#" className="text-sm text-white/60 hover:text-white">Pricing</a>
-          <a href="#" className="text-sm text-white/60 hover:text-white">Security</a>
-        </div>
-        <div className="flex flex-col gap-3">
-          <span className="font-semibold text-white mb-2">Company</span>
-          <a href="#" className="text-sm text-white/60 hover:text-white">About</a>
-          <a href="#" className="text-sm text-white/60 hover:text-white">Blog</a>
-          <a href="#" className="text-sm text-white/60 hover:text-white">Careers</a>
         </div>
       </div>
     </div>
