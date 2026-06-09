@@ -4,14 +4,26 @@ const { attachSocketServer } = require("./socket-handler");
 const port = process.env.PORT || 3001;
 const hostname = "0.0.0.0";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 const httpServer = createServer((req, res) => {
-  if (req.url === "/health") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ ok: true }));
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, corsHeaders);
+    res.end();
     return;
   }
 
-  res.writeHead(200, { "Content-Type": "text/plain" });
+  if (req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json", ...corsHeaders });
+    res.end(JSON.stringify({ ok: true, service: "athreix-sync-signaling", version: 2 }));
+    return;
+  }
+
+  res.writeHead(200, { "Content-Type": "text/plain", ...corsHeaders });
   res.end("Athreix Sync signaling server");
 });
 

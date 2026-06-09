@@ -127,15 +127,50 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (cancelled) return;
 
-      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
-      if (!socketUrl && typeof window !== "undefined" && !window.location.hostname.includes("localhost")) {
-        useMeshStore.getState().setSocketError("NEXT_PUBLIC_SOCKET_URL is not set — devices cannot connect across networks.");
+      let socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL?.replace(/\/$/, "") || "";
+      try {
+        const cfgRes = await fetch("/api/config");
+        if (cfgRes.ok) {
+          const cfg = await cfgRes.json();
+          if (cfg.socketUrl) socketUrl = cfg.socketUrl;
+        }
+      } catch {
+        /* use build-time fallback */
+      }
+
+      const isLocal = typeof window !== "undefined" && window.location.hostname.includes("localhost");
+
+      if (!socketUrl && !isLocal) {
+        useMeshStore.getState().setSocketError(
+          "Signaling server URL missing. Set SOCKET_SERVER_URL or NEXT_PUBLIC_SOCKET_URL in Vercel, then redeploy."
+        );
+        return;
+      }
+
+      if (socketUrl) {
+        try {
+          const healthRes = await fetch(`${socketUrl}/health`, { mode: "cors" });
+          if (!healthRes.ok) {
+            useMeshStore.getState().setSocketError(
+              `Signaling server offline at ${socketUrl} (${healthRes.status}). Redeploy Railway and update the URL in Vercel.`
+            );
+            return;
+          }
+        } catch {
+          useMeshStore.getState().setSocketError(
+            `Cannot reach signaling server at ${socketUrl}. Check Railway is running and the public domain is correct.`
+          );
+          return;
+        }
       }
 
       socket = io(socketUrl || undefined, {
-        transports: ["websocket", "polling"],
+        transports: ["polling", "websocket"],
+        upgrade: true,
         reconnection: true,
         reconnectionAttempts: Infinity,
+        reconnectionDelay: 1000,
+        timeout: 20000,
       });
       socketRef.current = socket;
 
@@ -169,7 +204,10 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     socket.on("connect_error", (err) => {
       console.error("Socket connection failed:", err.message);
       useMeshStore.getState().setSocketConnected(false);
-      useMeshStore.getState().setSocketError(`Signaling server unreachable: ${err.message}`);
+      useMeshStore.getState().setSocketError(
+        `Signaling server unreachable${socketUrl ? ` (${socketUrl})` : ""}: ${err.message}. ` +
+        `Verify Railway is deployed and NEXT_PUBLIC_SOCKET_URL in Vercel matches your Railway public URL.`
+      );
     });
 
     socket.on("server:info", (info: { version?: number }) => {

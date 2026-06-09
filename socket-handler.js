@@ -2,8 +2,12 @@ const { Server } = require("socket.io");
 
 function attachSocketServer(httpServer) {
   const io = new Server(httpServer, {
-    cors: { origin: "*" },
-    maxHttpBufferSize: 10e6, // 10MB per relay chunk
+    cors: { origin: "*", methods: ["GET", "POST"] },
+    transports: ["polling", "websocket"],
+    allowEIO3: true,
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    maxHttpBufferSize: 10e6,
   });
 
   io.on("connection", (socket) => {
