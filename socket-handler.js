@@ -13,7 +13,16 @@ function attachSocketServer(httpServer) {
     for (const [id] of io.sockets.sockets) {
       if (id !== socket.id) existingPeers.push({ id });
     }
+    socket.emit("server:info", { version: 2, features: ["relay", "peers-list"] });
     socket.emit("peers:list", existingPeers);
+
+    socket.on("peers:request", () => {
+      const peers = [];
+      for (const [id] of io.sockets.sockets) {
+        if (id !== socket.id) peers.push({ id });
+      }
+      socket.emit("peers:list", peers);
+    });
 
     socket.broadcast.emit("device:joined", { id: socket.id });
 
@@ -59,7 +68,7 @@ function attachSocketServer(httpServer) {
       io.to(data.target).emit("file:relay:chunk", {
         sender: socket.id,
         fileId: data.fileId,
-        chunk: data.chunk,
+        chunkB64: data.chunkB64,
         offset: data.offset,
       });
     });

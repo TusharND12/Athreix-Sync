@@ -30,6 +30,7 @@ import { useMeshStore } from "@/store/mesh.store";
 import { useMesh } from "@/providers/MeshProvider";
 import { AIAssistantBar } from "./components/AIAssistant";
 import { TransferTimeline } from "./components/TransferTimeline";
+import { SocketStatus } from "./components/SocketStatus";
 
 // --- Sub-Components ---
 
@@ -863,6 +864,7 @@ export default function Dashboard() {
         </header>
 
         <div className="relative z-10">
+          <SocketStatus />
           {activeView !== "Device Sync" && <AIAssistantBar />}
           
           <div className="mt-16">

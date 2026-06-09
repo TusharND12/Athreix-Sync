@@ -4,7 +4,8 @@ import React, { createContext, useContext, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useMeshStore } from '@/store/mesh.store';
 import { getIceServers } from '@/lib/ice-servers';
-import { shouldBeOfferer, waitForIceGathering, waitForDataChannel } from '@/lib/webrtc-utils';
+import { shouldBeOfferer, waitForIceGathering } from '@/lib/webrtc-utils';
+import { arrayBufferToBase64, base64ToArrayBuffer } from '@/lib/binary-utils';
 import type { DeviceConnectionState } from '@/store/mesh.store';
 
 interface MeshContextType {
@@ -66,8 +67,7 @@ function getPeerName(peerId: string) {
 }
 
 const PROGRESS_UPDATE_INTERVAL = CHUNK_SIZE * 8;
-const WEBRTC_CONNECT_TIMEOUT_MS = 12000;
-const RELAY_CHUNK_SIZE = 256 * 1024;
+const RELAY_CHUNK_SIZE = 64 * 1024;
 
 type RelayReceiveState = {
   metadata: { id: string; name: string; size: number; mimeType: string; isEphemeral?: boolean };
@@ -104,6 +104,9 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
   const iceServersRef = useRef<RTCIceServer[]>(getIceServers());
   const relayReceiveRef = useRef<Map<string, RelayReceiveState>>(new Map());
   const socketIdRef = useRef<string>("");
+  const sendFileRef = useRef<(targetId: string, file: File, isEphemeral?: boolean, transferId?: string) => void>(() => {});
+  const initiatePeerRef = useRef<(peerId: string, socket: Socket) => Promise<void>>(async () => {});
+  const finalizeFileRef = useRef<(targetId: string, metadata: RelayReceiveState["metadata"], buffers: ArrayBuffer[]) => void>(() => {});
 
   useEffect(() => {
     let socket: Socket | null = null;
@@ -125,33 +128,65 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
       if (cancelled) return;
 
       const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
-      socket = socketUrl ? io(socketUrl) : io();
+      if (!socketUrl && typeof window !== "undefined" && !window.location.hostname.includes("localhost")) {
+        useMeshStore.getState().setSocketError("NEXT_PUBLIC_SOCKET_URL is not set — devices cannot connect across networks.");
+      }
+
+      socket = io(socketUrl || undefined, {
+        transports: ["websocket", "polling"],
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+      });
       socketRef.current = socket;
+
+    const handlePeerDiscovered = async (id: string) => {
+      const myId = socket!.id ?? socketIdRef.current;
+      if (!myId || id === myId) return;
+      useMeshStore.getState().addDevice({ id, name: `Node_${id.substring(0, 4)}`, connectionState: "connecting" });
+      if (shouldBeOfferer(myId, id)) {
+        await initiatePeerRef.current(id, socket!);
+      }
+      setTimeout(() => {
+        const dev = useMeshStore.getState().devices.find((d) => d.id === id);
+        if (dev && (dev.connectionState === "connecting" || dev.connectionState === "failed")) {
+          useMeshStore.getState().updateDeviceConnection(id, "relay");
+        }
+      }, 4000);
+    };
 
     socket.on("connect", () => {
       socketIdRef.current = socket!.id ?? "";
+      useMeshStore.getState().setSocketConnected(true);
+      useMeshStore.getState().setSocketError(null);
       console.log("Connected to signaling server as:", socket!.id);
+      socket!.emit("peers:request");
+    });
+
+    socket.on("disconnect", () => {
+      useMeshStore.getState().setSocketConnected(false);
     });
 
     socket.on("connect_error", (err) => {
       console.error("Socket connection failed:", err.message);
+      useMeshStore.getState().setSocketConnected(false);
+      useMeshStore.getState().setSocketError(`Signaling server unreachable: ${err.message}`);
+    });
+
+    socket.on("server:info", (info: { version?: number }) => {
+      if (!info?.version || info.version < 2) {
+        useMeshStore.getState().setSocketError("Signaling server outdated — redeploy Railway with latest code.");
+      }
     });
 
     socket.on("peers:list", async (peers: { id: string }[]) => {
       for (const { id } of peers) {
-        useMeshStore.getState().addDevice({ id, name: `Node_${id.substring(0, 4)}`, connectionState: "connecting" });
-        if (shouldBeOfferer(socketIdRef.current, id)) {
-          await initiateConnectionToPeer(id, socket!);
-        }
+        await handlePeerDiscovered(id);
       }
     });
 
     socket.on("device:joined", async ({ id }) => {
       console.log("Device joined:", id);
-      useMeshStore.getState().addDevice({ id, name: `Node_${id.substring(0, 4)}`, connectionState: "connecting" });
-      if (shouldBeOfferer(socketIdRef.current, id)) {
-        await initiateConnectionToPeer(id, socket!);
-      }
+      await handlePeerDiscovered(id);
     });
 
     socket.on("device:left", (d: { id: string }) => {
@@ -234,7 +269,7 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
         const isEphemeral = (file as any)?.isEphemeral;
         
         if (file) {
-          sendFile(data.sender, file, isEphemeral, data.fileId);
+          sendFileRef.current(data.sender, file, isEphemeral, data.fileId);
           pendingFilesRef.current.delete(data.fileId);
         }
       } else {
@@ -272,8 +307,8 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     socket.on("file:relay:chunk", (data) => {
       const key = `${data.sender}:${data.fileId}`;
       const state = relayReceiveRef.current.get(key);
-      if (!state) return;
-      const chunk = data.chunk instanceof ArrayBuffer ? data.chunk : new Uint8Array(data.chunk).buffer;
+      if (!state || !data.chunkB64) return;
+      const chunk = base64ToArrayBuffer(data.chunkB64);
       state.buffers.push(chunk);
       state.receivedSize += chunk.byteLength;
       useMeshStore.getState().updateTransferProgress(data.fileId, state.receivedSize);
@@ -283,7 +318,7 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
       const key = `${data.sender}:${data.fileId}`;
       const state = relayReceiveRef.current.get(key);
       if (!state) return;
-      finalizeReceivedFile(state.peerId, state.metadata, state.buffers);
+      finalizeFileRef.current(state.peerId, state.metadata, state.buffers);
       useMeshStore.getState().completeTransfer(data.fileId);
       relayReceiveRef.current.delete(key);
     });
@@ -524,9 +559,15 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     let offset = 0;
     while (offset < file.size) {
       const chunk = await file.slice(offset, offset + RELAY_CHUNK_SIZE).arrayBuffer();
-      socket.emit("file:relay:chunk", { target: targetId, fileId, chunk, offset });
+      socket.emit("file:relay:chunk", {
+        target: targetId,
+        fileId,
+        offset,
+        chunkB64: arrayBufferToBase64(chunk),
+      });
       offset = Math.min(offset + RELAY_CHUNK_SIZE, file.size);
       useMeshStore.getState().updateTransferProgress(fileId, offset);
+      await new Promise((r) => setTimeout(r, 0));
     }
 
     socket.emit("file:relay:end", { target: targetId, fileId });
@@ -569,6 +610,13 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
 
   const sendFile = async (targetId: string, file: File, isEphemeral: boolean = false, transferId?: string) => {
     const fileId = transferId ?? Math.random().toString();
+    const socket = socketRef.current;
+
+    if (!socket?.connected) {
+      useMeshStore.getState().failTransfer(fileId);
+      useMeshStore.getState().addNotification("Not connected to signaling server. Check NEXT_PUBLIC_SOCKET_URL.");
+      return;
+    }
 
     useMeshStore.getState().startTransfer({
       id: fileId,
@@ -580,23 +628,28 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
       status: "transferring",
     });
 
-    try {
-      const dc = await waitForDataChannel(
-        () => dataChannelsRef.current[targetId],
-        WEBRTC_CONNECT_TIMEOUT_MS
-      );
-      await sendFileViaWebRTC(dc, targetId, file, fileId, isEphemeral);
-    } catch (webrtcErr) {
-      console.warn("WebRTC unavailable, falling back to cloud relay:", webrtcErr);
+    const dc = dataChannelsRef.current[targetId];
+    if (dc?.readyState === "open") {
       try {
-        await sendFileViaRelay(targetId, file, fileId, isEphemeral);
-      } catch (relayErr) {
-        console.error("File transfer failed:", relayErr);
-        useMeshStore.getState().failTransfer(fileId);
-        useMeshStore.getState().addNotification(`Failed to send ${file.name}`);
+        await sendFileViaWebRTC(dc, targetId, file, fileId, isEphemeral);
+        return;
+      } catch (webrtcErr) {
+        console.warn("WebRTC send failed, using cloud relay:", webrtcErr);
       }
     }
+
+    try {
+      await sendFileViaRelay(targetId, file, fileId, isEphemeral);
+    } catch (relayErr) {
+      console.error("File transfer failed:", relayErr);
+      useMeshStore.getState().failTransfer(fileId);
+      useMeshStore.getState().addNotification(`Failed to send ${file.name}`);
+    }
   };
+
+  sendFileRef.current = sendFile;
+  initiatePeerRef.current = initiateConnectionToPeer;
+  finalizeFileRef.current = finalizeReceivedFile;
 
   const broadcastClipboard = (text: string) => {
     const message = JSON.stringify({ type: "clipboard", data: text });

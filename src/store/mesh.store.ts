@@ -60,6 +60,8 @@ interface MeshState {
   transferRequests: TransferRequest[];
   activeTransfers: ActiveTransfer[];
   clipboardText: string | null;
+  socketConnected: boolean;
+  socketError: string | null;
   userName: string;
   addDevice: (device: Device) => void;
   updateDeviceName: (id: string, name: string) => void;
@@ -80,6 +82,8 @@ interface MeshState {
   failTransfer: (id: string) => void;
   removeTransfer: (id: string) => void;
   setClipboardText: (text: string) => void;
+  setSocketConnected: (connected: boolean) => void;
+  setSocketError: (error: string | null) => void;
   setUserName: (name: string) => void;
 }
 
@@ -90,6 +94,8 @@ export const useMeshStore = create<MeshState>((set) => ({
   transferRequests: [],
   activeTransfers: [],
   clipboardText: null,
+  socketConnected: false,
+  socketError: null,
   userName: "Athreix Node",
   addDevice: (device) => set((state) => {
     const existing = state.devices.find(d => d.id === device.id);
@@ -195,5 +201,7 @@ export const useMeshStore = create<MeshState>((set) => ({
     activeTransfers: state.activeTransfers.filter(t => t.id !== id),
   })),
   setClipboardText: (text) => set({ clipboardText: text }),
+  setSocketConnected: (connected) => set({ socketConnected: connected }),
+  setSocketError: (error) => set({ socketError: error }),
   setUserName: (name) => set({ userName: name })
 }));
