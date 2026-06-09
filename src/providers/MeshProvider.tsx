@@ -149,18 +149,17 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (socketUrl) {
         try {
-          const healthRes = await fetch(`${socketUrl}/health`, { mode: "cors" });
-          if (!healthRes.ok) {
+          const healthRes = await fetch("/api/socket-health");
+          const health = await healthRes.json();
+          if (!health.ok) {
+            console.warn("Signaling server health check failed:", health);
             useMeshStore.getState().setSocketError(
-              `Signaling server offline at ${socketUrl} (${healthRes.status}). Redeploy Railway and update the URL in Vercel.`
+              `Signaling server offline at ${socketUrl}. Redeploy Railway and verify SOCKET_SERVER_URL in Vercel.`
             );
             return;
           }
-        } catch {
-          useMeshStore.getState().setSocketError(
-            `Cannot reach signaling server at ${socketUrl}. Check Railway is running and the public domain is correct.`
-          );
-          return;
+        } catch (err) {
+          console.warn("Health check skipped, attempting socket connect:", err);
         }
       }
 
