@@ -368,7 +368,7 @@ const EphemeralViewerModal = () => {
             <img src={ephemeralFile.blobUrl} className="max-w-full max-h-full object-contain" alt="Ephemeral Content" />
           ) : (
             <div className="text-white/50 text-center">
-              <FileIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <File className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p>Text/Binary content available.</p>
               <a href={ephemeralFile.blobUrl} download={ephemeralFile.name} className="mt-4 inline-block px-4 py-2 bg-white/10 rounded-lg text-white">Temporary Download</a>
             </div>
