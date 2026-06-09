@@ -5,5 +5,9 @@ export async function GET() {
     ""
   ).replace(/\/$/, "");
 
-  return Response.json({ socketUrl });
+  return Response.json({
+    socketUrl,
+    // Client connects to same origin; Vercel rewrites /socket.io → Railway
+    connectSameOrigin: Boolean(socketUrl),
+  });
 }
