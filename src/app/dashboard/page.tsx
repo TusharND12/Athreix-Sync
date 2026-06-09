@@ -22,7 +22,9 @@ import {
   Copy,
   Search,
   Cloud,
-  FilePlus
+  FilePlus,
+  Menu,
+  X
 } from "lucide-react";
 import { useMeshStore } from "@/store/mesh.store";
 import { useMesh } from "@/providers/MeshProvider";
@@ -351,6 +353,7 @@ export default function Dashboard() {
   const [activeView, setActiveView] = useState("My Mesh");
   const [isDragging, setIsDragging] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const files = useMeshStore((state) => state.files);
   const devices = useMeshStore((state) => state.devices);
@@ -450,13 +453,29 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#050505] flex">
       <IncomingTransferModal />
       <EphemeralViewerModal />
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-64 border-r border-white/5 h-screen flex flex-col glass fixed left-0 top-0 z-50">
-        <div className="p-6 flex items-center gap-3 border-b border-white/5">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center">
-            <Network className="w-4 h-4 text-white" />
+      <div className={`w-64 border-r border-white/5 h-screen flex flex-col glass fixed left-0 top-0 z-50 transform transition-transform duration-300 md:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="p-6 flex items-center justify-between border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center">
+              <Network className="w-4 h-4 text-white" />
+            </div>
+            <span className="display text-xl tracking-[0.18em] text-white">ATHREIXSYNC</span>
           </div>
-          <span className="display text-xl tracking-[0.18em] text-white">ATHREIXSYNC</span>
+          <button 
+            className="md:hidden text-white/50 hover:text-white"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="flex-1 py-6 px-4 space-y-2">
@@ -469,7 +488,10 @@ export default function Dashboard() {
           ].map((item) => (
             <button 
               key={item.label}
-              onClick={() => setActiveView(item.label)}
+              onClick={() => {
+                setActiveView(item.label);
+                setIsMobileMenuOpen(false);
+              }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
                 activeView === item.label 
                   ? "bg-[var(--lava-400)]/20 text-[var(--lava-300)] border border-[var(--lava-400)]/30" 
@@ -516,7 +538,7 @@ export default function Dashboard() {
       
       {/* Main Content */}
       <main 
-        className={`flex-1 ml-64 p-8 relative overflow-hidden transition-colors ${isDragging ? 'bg-[var(--lava-300)]/10' : ''}`}
+        className={`flex-1 md:ml-64 p-4 md:p-8 relative overflow-hidden transition-colors ${isDragging ? 'bg-[var(--lava-300)]/10' : ''} w-full`}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
         onDrop={handleDrop}
@@ -525,16 +547,24 @@ export default function Dashboard() {
         <div className="absolute bottom-[-20%] left-[20%] w-[500px] h-[500px] rounded-full bg-[var(--lava-300)] opacity-10 blur-[100px] pointer-events-none" />
 
         <header className="flex items-center justify-between mb-12 relative z-40">
-          <div>
-            <h1 className="display text-3xl text-white mb-1">{activeView}</h1>
-            <p className="text-white/50">
-              {activeView === "Device Sync" ? "Manage your real-time peer connections." : "Your files are synced securely across your devices."}
-            </p>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden w-10 h-10 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="display text-2xl md:text-3xl text-white mb-1">{activeView}</h1>
+              <p className="text-white/50 hidden md:block text-sm">
+                {activeView === "Device Sync" ? "Manage your real-time peer connections." : "Your files are synced securely across your devices."}
+              </p>
+            </div>
           </div>
-          <div className="flex gap-4 relative">
+          <div className="flex gap-2 md:gap-4 relative">
             <button 
               onClick={() => setIsEphemeral(!isEphemeral)}
-              className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all font-bold ${
+              className={`px-3 md:px-4 py-2 rounded-xl flex items-center gap-2 transition-all font-bold text-sm ${
                 isEphemeral 
                   ? "bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] border border-red-400" 
                   : "glass text-white/50 hover:text-white"
@@ -542,7 +572,7 @@ export default function Dashboard() {
               title="Toggle 'Burn After Reading' mode for next upload"
             >
               <ShieldAlert className="w-4 h-4" />
-              {isEphemeral ? "Ephemeral ON" : "Ephemeral OFF"}
+              <span className="hidden md:inline">{isEphemeral ? "Ephemeral ON" : "Ephemeral OFF"}</span>
             </button>
             <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors">
               <Settings className="w-5 h-5" />

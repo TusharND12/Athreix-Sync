@@ -18,7 +18,9 @@ import {
   ArrowRight,
   Fingerprint,
   WifiOff,
-  EyeOff
+  EyeOff,
+  Menu,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +38,7 @@ function Starfield(props: any) {
       <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
         <PointMaterial
           transparent
-          color="#00f0ff"
+          color="#ff5b1f"
           size={0.005}
           sizeAttenuation={true}
           depthWrite={false}
@@ -46,32 +48,67 @@ function Starfield(props: any) {
   );
 }
 
-const NavBar = () => (
-  <nav className="fixed top-0 left-0 right-0 z-50 glass border-b-0 border-white/5 py-4 px-6 md:px-12 flex items-center justify-between">
-    <div className="flex items-center gap-2">
-      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center">
-        <Network className="w-4 h-4 text-white" />
-      </div>
-      <span className="display text-xl font-bold tracking-[0.18em]">ATHREIXSYNC</span>
-    </div>
-    
-    <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-      <a href="#features" className="hover:text-white transition-colors">Features</a>
-      <a href="#mesh" className="hover:text-white transition-colors">Mesh Network</a>
-      <a href="#security" className="hover:text-white transition-colors">Security</a>
-      <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-    </div>
+const NavBar = () => {
+  const [isOpen, setIsOpen] = useState(false);
 
-    <div className="flex items-center gap-4">
-      <button className="hidden md:block text-sm font-medium hover:text-white text-white/70 transition-colors">
-        Log in
-      </button>
-      <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-semibold hover:bg-white/90 transition-transform active:scale-95">
-        Get Early Access
-      </button>
-    </div>
-  </nav>
-);
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b-0 border-white/5 py-4 px-6 md:px-12">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center">
+            <Network className="w-4 h-4 text-white" />
+          </div>
+          <span className="display text-xl font-bold tracking-[0.18em]">ATHREIXSYNC</span>
+        </div>
+        
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
+          <a href="#features" className="hover:text-white transition-colors">Features</a>
+          <a href="#mesh" className="hover:text-white transition-colors">Mesh Network</a>
+          <a href="#security" className="hover:text-white transition-colors">Security</a>
+          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+        </div>
+
+        <div className="hidden md:flex items-center gap-4">
+          <button className="text-sm font-medium hover:text-white text-white/70 transition-colors">
+            Log in
+          </button>
+          <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-semibold hover:bg-white/90 transition-transform active:scale-95">
+            Get Early Access
+          </button>
+        </div>
+
+        <button 
+          className="md:hidden text-white/70 hover:text-white"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden pt-4 mt-4 border-t border-white/10 flex flex-col gap-4 overflow-hidden"
+          >
+            <a href="#features" className="text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Features</a>
+            <a href="#mesh" className="text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Mesh Network</a>
+            <a href="#security" className="text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Security</a>
+            <a href="#pricing" className="text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Pricing</a>
+            <hr className="border-white/10" />
+            <button className="text-left text-white/70 hover:text-white" onClick={() => setIsOpen(false)}>Log in</button>
+            <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-semibold hover:bg-white/90 transition-transform active:scale-95 text-center" onClick={() => setIsOpen(false)}>
+              Get Early Access
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
+  );
+};
 
 const Hero = () => {
   return (
