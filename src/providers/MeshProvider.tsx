@@ -250,10 +250,10 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     
     socket.emit("file:request", {
       target: targetId,
-      senderName: `Node_${socket.id?.substring(0, 4)}`,
       fileId,
       fileName: file.name,
       fileSize: file.size,
+      senderName: useMeshStore.getState().userName,
       isEphemeral
     });
   };

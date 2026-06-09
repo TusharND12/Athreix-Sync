@@ -347,6 +347,66 @@ const EphemeralViewerModal = () => {
   );
 };
 
+const SettingsModal = ({ show, onClose }: { show: boolean, onClose: () => void }) => {
+  const userName = useMeshStore((state) => state.userName);
+  const setUserName = useMeshStore((state) => state.setUserName);
+  const [tempName, setTempName] = useState(userName);
+
+  // Sync tempName when modal opens
+  useEffect(() => {
+    if (show) setTempName(userName);
+  }, [show, userName]);
+
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="glass-card w-[90%] max-w-[400px] p-6 rounded-3xl border border-white/10 shadow-2xl"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-white">Settings</h3>
+          <button onClick={onClose} className="text-white/50 hover:text-white"><X className="w-5 h-5" /></button>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">Display Name</label>
+            <input 
+              type="text" 
+              value={tempName}
+              onChange={(e) => setTempName(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-[var(--lava-300)] transition-colors"
+              placeholder="e.g. Athreix Node"
+            />
+            <p className="text-xs text-white/40 mt-2">This name will be visible to peers when you send them files.</p>
+          </div>
+        </div>
+
+        <div className="mt-8 flex gap-3">
+          <button 
+            onClick={onClose}
+            className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-colors font-medium"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={() => {
+              setUserName(tempName || "Anonymous Node");
+              onClose();
+            }}
+            className="flex-1 py-2.5 bg-[var(--lava-500)] hover:bg-[var(--lava-400)] text-white shadow-[0_0_15px_rgba(255,91,31,0.3)] rounded-xl transition-all font-medium"
+          >
+            Save Changes
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 // --- Main Page ---
 
 export default function Dashboard() {
@@ -354,6 +414,7 @@ export default function Dashboard() {
   const [isDragging, setIsDragging] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const files = useMeshStore((state) => state.files);
   const devices = useMeshStore((state) => state.devices);
@@ -453,6 +514,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#050505] flex">
       <IncomingTransferModal />
       <EphemeralViewerModal />
+      <SettingsModal show={showSettings} onClose={() => setShowSettings(false)} />
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div 
@@ -574,7 +636,10 @@ export default function Dashboard() {
               <ShieldAlert className="w-4 h-4" />
               <span className="hidden md:inline">{isEphemeral ? "Ephemeral ON" : "Ephemeral OFF"}</span>
             </button>
-            <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors">
+            <button 
+              onClick={() => setShowSettings(true)}
+              className="w-10 h-10 rounded-full glass flex items-center justify-center text-white/60 hover:text-white transition-colors"
+            >
               <Settings className="w-5 h-5" />
             </button>
             <div className="relative">

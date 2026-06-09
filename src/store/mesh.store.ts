@@ -41,6 +41,7 @@ interface MeshState {
   notifications: Notification[];
   transferRequests: TransferRequest[];
   clipboardText: string | null;
+  userName: string;
   addDevice: (device: Device) => void;
   removeDevice: (id: string) => void;
   addFile: (file: FileState) => void;
@@ -52,6 +53,7 @@ interface MeshState {
   addTransferRequest: (req: TransferRequest) => void;
   removeTransferRequest: (id: string) => void;
   setClipboardText: (text: string) => void;
+  setUserName: (name: string) => void;
 }
 
 export const useMeshStore = create<MeshState>((set) => ({
@@ -60,6 +62,7 @@ export const useMeshStore = create<MeshState>((set) => ({
   notifications: [],
   transferRequests: [],
   clipboardText: null,
+  userName: "Athreix Node",
   addDevice: (device) => set((state) => {
     if (state.devices.find(d => d.id === device.id)) return state;
     return { devices: [...state.devices, device] };
@@ -89,5 +92,6 @@ export const useMeshStore = create<MeshState>((set) => ({
   removeTransferRequest: (id) => set((state) => ({
     transferRequests: state.transferRequests.filter(r => r.id !== id)
   })),
-  setClipboardText: (text) => set({ clipboardText: text })
+  setClipboardText: (text) => set({ clipboardText: text }),
+  setUserName: (name) => set({ userName: name })
 }));
