@@ -24,6 +24,39 @@ const MeshContext = createContext<MeshContextType>({
 
 export const useMesh = () => useContext(MeshContext);
 
+const CHUNK_SIZE = 16 * 1024; // 16KB — safe for SCTP
+const MAX_BUFFERED = 1024 * 1024; // wait when send buffer exceeds 1MB
+
+function configureDataChannel(dc: RTCDataChannel) {
+  dc.binaryType = "arraybuffer";
+  dc.bufferedAmountLowThreshold = MAX_BUFFERED / 2;
+}
+
+function waitForBuffer(dc: RTCDataChannel): Promise<void> {
+  if (dc.bufferedAmount <= MAX_BUFFERED) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    if (dc.readyState !== "open") {
+      reject(new Error("Data channel closed"));
+      return;
+    }
+
+    const onLow = () => {
+      dc.removeEventListener("bufferedamountlow", onLow);
+      resolve();
+    };
+    dc.addEventListener("bufferedamountlow", onLow);
+  });
+}
+
+async function sendBinaryChunk(dc: RTCDataChannel, data: ArrayBuffer) {
+  await waitForBuffer(dc);
+  if (dc.readyState !== "open") {
+    throw new Error("Data channel closed during transfer");
+  }
+  dc.send(data);
+}
+
 export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
   const socketRef = useRef<Socket | null>(null);
   const peersRef = useRef<{ [id: string]: RTCPeerConnection }>({});
@@ -55,6 +88,7 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
       const pc = createPeerConnection(id, socket);
       
       const dc = pc.createDataChannel("fileTransfer", { ordered: true });
+      configureDataChannel(dc);
       dataChannelsRef.current[id] = dc;
       setupDataChannel(dc, id);
 
@@ -170,6 +204,7 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     pc.ondatachannel = (event) => {
+      configureDataChannel(event.channel);
       setupDataChannel(event.channel, targetId);
       dataChannelsRef.current[targetId] = event.channel;
     };
@@ -177,9 +212,40 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     return pc;
   };
 
-  const setupDataChannel = (dc: RTCDataChannel, targetId: string) => {
-    dc.binaryType = "arraybuffer";
+  const finalizeReceivedFile = (
+    targetId: string,
+    metadata: { id: string; name: string; size: number; mimeType: string; isEphemeral?: boolean },
+    receivedBuffers: ArrayBuffer[]
+  ) => {
+    const blob = new Blob(receivedBuffers, { type: metadata.mimeType });
+    const url = URL.createObjectURL(blob);
 
+    useMeshStore.getState().addFile({
+      id: metadata.id,
+      name: metadata.name,
+      size: metadata.size,
+      type: metadata.mimeType,
+      blobUrl: url,
+      status: "completed",
+      source: "remote",
+      timestamp: Date.now(),
+      isEphemeral: metadata.isEphemeral,
+    });
+
+    if (metadata.isEphemeral) {
+      useMeshStore.getState().addNotification(`Received ephemeral file: ${metadata.name}`);
+    } else {
+      useMeshStore.getState().addNotification(`Received ${metadata.name} from a peer node`);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = metadata.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  };
+
+  const setupDataChannel = (dc: RTCDataChannel, targetId: string) => {
     dc.onopen = () => {
       // Broadcast our current name to the new peer
       dc.send(JSON.stringify({ type: "name_update", name: useMeshStore.getState().userName }));
@@ -204,11 +270,19 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
         } else if (parsed.type === "name_update") {
           useMeshStore.getState().updateDeviceName(targetId, parsed.name);
           return;
-        } else {
-          // File metadata
+        } else if (parsed.type === "file_end") {
+          if (receivingMetadata && parsed.id === receivingMetadata.id) {
+            finalizeReceivedFile(targetId, receivingMetadata, receivedBuffers);
+            receivingMetadata = null;
+            receivedBuffers = [];
+            receivedSize = 0;
+          }
+          return;
+        } else if (parsed.type === "file_start") {
           receivingMetadata = parsed;
           receivedBuffers = [];
           receivedSize = 0;
+          return;
         }
       } else if (event.data instanceof ArrayBuffer) {
         if (!receivingMetadata) return;
@@ -216,36 +290,8 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
         receivedBuffers.push(event.data);
         receivedSize += event.data.byteLength;
 
-        if (receivedSize === receivingMetadata.size) {
-          const blob = new Blob(receivedBuffers, { type: receivingMetadata.type });
-          const url = URL.createObjectURL(blob);
-          
-          useMeshStore.getState().addFile({
-            id: receivingMetadata.id,
-            name: receivingMetadata.name,
-            size: receivingMetadata.size,
-            type: receivingMetadata.type,
-            blobUrl: url,
-            status: "completed",
-            source: "remote",
-            timestamp: Date.now(),
-            isEphemeral: receivingMetadata.isEphemeral
-          });
-          
-          if (receivingMetadata.isEphemeral) {
-            useMeshStore.getState().addNotification(`Received ephemeral file: ${receivingMetadata.name}`);
-          } else {
-            useMeshStore.getState().addNotification(`Received ${receivingMetadata.name} from a peer node`);
-            // Trigger automatic download
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = receivingMetadata.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-          }
-
-          // Reset
+        if (receivedSize >= receivingMetadata.size) {
+          finalizeReceivedFile(targetId, receivingMetadata, receivedBuffers);
           receivingMetadata = null;
           receivedBuffers = [];
           receivedSize = 0;
@@ -285,29 +331,35 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     const dc = dataChannelsRef.current[targetId];
     if (!dc || dc.readyState !== "open") {
       console.error("Data channel not open to", targetId);
+      useMeshStore.getState().addNotification("Transfer failed: connection not ready");
       return;
     }
 
     const fileId = Math.random().toString();
-    
-    // Send metadata
-    dc.send(JSON.stringify({
-      id: fileId,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      isEphemeral
-    }));
 
-    // Chunk and send
-    const chunkSize = 16384;
-    const arrayBuffer = await file.arrayBuffer();
-    
-    let offset = 0;
-    while (offset < arrayBuffer.byteLength) {
-      const slice = arrayBuffer.slice(offset, offset + chunkSize);
-      dc.send(slice);
-      offset += chunkSize;
+    try {
+      dc.send(JSON.stringify({
+        type: "file_start",
+        id: fileId,
+        name: file.name,
+        size: file.size,
+        mimeType: file.type,
+        isEphemeral,
+      }));
+
+      let offset = 0;
+      while (offset < file.size) {
+        const chunk = await file.slice(offset, offset + CHUNK_SIZE).arrayBuffer();
+        await sendBinaryChunk(dc, chunk);
+        offset += CHUNK_SIZE;
+      }
+
+      await waitForBuffer(dc);
+      dc.send(JSON.stringify({ type: "file_end", id: fileId }));
+      useMeshStore.getState().addNotification(`Sent ${file.name} successfully`);
+    } catch (err) {
+      console.error("File transfer failed:", err);
+      useMeshStore.getState().addNotification(`Failed to send ${file.name}`);
     }
   };
 
