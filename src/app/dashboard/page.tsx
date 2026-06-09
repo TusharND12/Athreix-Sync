@@ -145,12 +145,10 @@ const FileGrid = ({ files, emptyMessage, showActions }: { files: any[], emptyMes
   );
 };
 
-const DeviceSyncView = () => {
+const DeviceSyncView = ({ onTriggerSend }: { onTriggerSend?: (file: File, targetId: string) => void }) => {
   const devices = useMeshStore((state) => state.devices);
-  const { requestFileTransfer } = useMesh();
   const addFile = useMeshStore((state) => state.addFile);
   const [expandedDevice, setExpandedDevice] = useState<string | null>(null);
-  const [pendingSendFile, setPendingSendFile] = useState<{file: File, targetId?: string} | null>(null);
 
   const handleDeviceFileUpload = (e: React.ChangeEvent<HTMLInputElement>, deviceId: string) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -165,8 +163,9 @@ const DeviceSyncView = () => {
         source: "local",
         timestamp: Date.now()
       });
-
-      setPendingSendFile({ file, targetId: deviceId });
+      if (onTriggerSend) {
+        onTriggerSend(file, deviceId);
+      }
     }
   };
 
@@ -545,6 +544,7 @@ export default function Dashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [pendingSendFile, setPendingSendFile] = useState<{file: File, targetId?: string} | null>(null);
 
   const files = useMeshStore((state) => state.files);
   const devices = useMeshStore((state) => state.devices);
@@ -630,7 +630,7 @@ export default function Dashboard() {
   const renderActiveView = () => {
     switch (activeView) {
       case "My Mesh":
-        return <DeviceSyncView />;
+        return <DeviceSyncView onTriggerSend={(file, targetId) => setPendingSendFile({ file, targetId })} />;
       case "Shared with Me":
         return <FileGrid files={remoteFiles} emptyMessage="No files received from peers yet." />;
       case "Recent":
