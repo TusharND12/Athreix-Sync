@@ -196,7 +196,7 @@ const DeviceSyncView = ({ onTriggerSend }: { onTriggerSend?: (file: File, target
         const connStyles = {
           connecting: { bg: "bg-yellow-500/20", border: "border-yellow-500/30", icon: "text-yellow-400", label: "Connecting…" },
           connected: { bg: "bg-green-500/20", border: "border-green-500/30", icon: "text-green-400", label: "Direct P2P • Connected" },
-          relay: { bg: "bg-[var(--lava-400)]/20", border: "border-[var(--lava-400)]/30", icon: "text-[var(--lava-300)]", label: "Cross-network relay • Connected" },
+          relay: { bg: "bg-[var(--lava-400)]/20", border: "border-[var(--lava-400)]/30", icon: "text-[var(--lava-300)]", label: "Cross-network • Connected via relay" },
           failed: { bg: "bg-red-500/20", border: "border-red-500/30", icon: "text-red-400", label: "Connection failed" },
         }[conn];
 

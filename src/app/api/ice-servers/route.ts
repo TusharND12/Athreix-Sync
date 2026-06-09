@@ -1,30 +1,35 @@
 import { getIceServers } from "@/lib/ice-servers";
 
 export async function GET() {
-  const servers: RTCIceServer[] = [...getIceServers()];
+  const stunServers = getIceServers();
 
-  const apiKey = process.env.METERED_API_KEY;
   const appName = process.env.METERED_APP_NAME;
+  const turnApiKey =
+    process.env.METERED_TURN_API_KEY ||
+    process.env.METERED_API_KEY ||
+    process.env.NEXT_PUBLIC_METERED_TURN_API_KEY;
 
-  if (apiKey && appName) {
+  if (appName && turnApiKey) {
     try {
       const res = await fetch(
-        `https://${appName}.metered.live/api/v1/turn/credentials?apiKey=${apiKey}`,
-        { next: { revalidate: 3600 } }
+        `https://${appName}.metered.live/api/v1/turn/credentials?apiKey=${turnApiKey}`,
+        { cache: "no-store" }
       );
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) {
-          return Response.json({ iceServers: data });
+        if (Array.isArray(data) && data.length > 0) {
+          return Response.json({ iceServers: [...stunServers, ...data] });
         }
-        if (data.iceServers && Array.isArray(data.iceServers)) {
-          return Response.json({ iceServers: data.iceServers });
-        }
+      } else {
+        console.error("Metered TURN API error:", res.status, await res.text());
       }
     } catch (err) {
       console.error("Failed to fetch Metered TURN credentials:", err);
     }
   }
 
-  return Response.json({ iceServers: servers });
+  return Response.json({
+    iceServers: stunServers,
+    turnConfigured: false,
+  });
 }
