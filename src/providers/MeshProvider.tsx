@@ -7,7 +7,7 @@ import { useMeshStore } from '@/store/mesh.store';
 interface MeshContextType {
   socket: Socket | null;
   sendFile: (targetId: string, file: File, isEphemeral?: boolean) => void;
-  requestFileTransfer: (targetId: string, file: File, isEphemeral?: boolean) => void;
+  requestFileTransfer: (targetId: string, file: File, isEphemeral?: boolean, passkey?: string) => void;
   respondToFileRequest: (senderId: string, fileId: string, accepted: boolean) => void;
   broadcastClipboard: (text: string) => void;
   broadcastName: (name: string) => void;
@@ -126,7 +126,8 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
         senderName: data.senderName,
         fileName: data.fileName,
         fileSize: data.fileSize,
-        isEphemeral: data.isEphemeral
+        isEphemeral: data.isEphemeral,
+        passkey: data.passkey
       });
     });
 
@@ -249,7 +250,7 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     };
   };
 
-  const requestFileTransfer = (targetId: string, file: File, isEphemeral: boolean = false) => {
+  const requestFileTransfer = (targetId: string, file: File, isEphemeral: boolean = false, passkey?: string) => {
     const socket = socketRef.current;
     if (!socket) return;
     
@@ -264,7 +265,8 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
       fileName: file.name,
       fileSize: file.size,
       senderName: useMeshStore.getState().userName,
-      isEphemeral
+      isEphemeral,
+      passkey
     });
   };
 

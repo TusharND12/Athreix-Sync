@@ -43,6 +43,7 @@ app.prepare().then(() => {
         fileName: data.fileName,
         fileSize: data.fileSize,
         isEphemeral: data.isEphemeral,
+        passkey: data.passkey,
       });
     });
 

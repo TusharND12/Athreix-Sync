@@ -150,6 +150,7 @@ const DeviceSyncView = () => {
   const { requestFileTransfer } = useMesh();
   const addFile = useMeshStore((state) => state.addFile);
   const [expandedDevice, setExpandedDevice] = useState<string | null>(null);
+  const [pendingSendFile, setPendingSendFile] = useState<{file: File, targetId?: string} | null>(null);
 
   const handleDeviceFileUpload = (e: React.ChangeEvent<HTMLInputElement>, deviceId: string) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -165,8 +166,7 @@ const DeviceSyncView = () => {
         timestamp: Date.now()
       });
 
-      requestFileTransfer(deviceId, file);
-      alert(`Transfer requested! Waiting for ${deviceId} to accept.`);
+      setPendingSendFile({ file, targetId: deviceId });
     }
   };
 
@@ -250,10 +250,29 @@ const DeviceSyncView = () => {
 const IncomingTransferModal = () => {
   const transferRequests = useMeshStore((state) => state.transferRequests);
   const { respondToFileRequest } = useMesh();
+  const [passkeyInput, setPasskeyInput] = useState("");
+  const [error, setError] = useState("");
 
   if (transferRequests.length === 0) return null;
 
   const request = transferRequests[0];
+  const requiresPasskey = !!request.passkey && request.passkey.length > 0;
+  
+  const handleAccept = () => {
+    if (requiresPasskey && passkeyInput !== request.passkey) {
+      setError("Incorrect passkey");
+      return;
+    }
+    setError("");
+    respondToFileRequest(request.senderId, request.id, true);
+    setPasskeyInput("");
+  };
+
+  const handleDecline = () => {
+    respondToFileRequest(request.senderId, request.id, false);
+    setPasskeyInput("");
+    setError("");
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -270,16 +289,30 @@ const IncomingTransferModal = () => {
           <strong className="text-white">{request.senderName}</strong> wants to send you <br />
           <strong className="text-white">"{request.fileName}"</strong> ({(request.fileSize / 1024 / 1024).toFixed(2)} MB)
         </p>
+
+        {requiresPasskey && (
+          <div className="w-full mb-6 text-left">
+            <label className="block text-sm font-medium text-white/70 mb-2">Enter Passkey to Accept</label>
+            <input 
+              type="password" 
+              value={passkeyInput}
+              onChange={(e) => { setPasskeyInput(e.target.value); setError(""); }}
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-[var(--lava-300)] transition-colors"
+              placeholder="Passkey required"
+            />
+            {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+          </div>
+        )}
         
         <div className="flex w-full gap-3">
           <button 
-            onClick={() => respondToFileRequest(request.senderId, request.id, false)}
+            onClick={handleDecline}
             className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-colors font-medium"
           >
             Decline
           </button>
           <button 
-            onClick={() => respondToFileRequest(request.senderId, request.id, true)}
+            onClick={handleAccept}
             className="flex-1 py-3 bg-[var(--lava-500)] hover:bg-[var(--lava-400)] text-white shadow-[0_0_20px_rgba(255,91,31,0.4)] rounded-xl transition-all font-medium"
           >
             Accept
@@ -409,6 +442,101 @@ const SettingsModal = ({ show, onClose, onSave }: { show: boolean, onClose: () =
   );
 };
 
+const SendFileModal = ({ 
+  pendingSend, 
+  onClose, 
+  onSend 
+}: { 
+  pendingSend: { file: File, targetId?: string } | null, 
+  onClose: () => void,
+  onSend: (targetId: string, file: File, isEphemeral: boolean, passkey: string) => void
+}) => {
+  const devices = useMeshStore(state => state.devices);
+  const [passkey, setPasskey] = useState("");
+  const [isEphemeral, setIsEphemeral] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<string>("");
+
+  useEffect(() => {
+    if (pendingSend?.targetId) setSelectedDevice(pendingSend.targetId);
+    else if (devices.length > 0 && !selectedDevice) setSelectedDevice(devices[0].id);
+  }, [pendingSend, devices, selectedDevice]);
+
+  if (!pendingSend) return null;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="glass-card w-[90%] max-w-[400px] p-6 rounded-3xl border border-white/10 shadow-2xl"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-white">Send File</h3>
+          <button onClick={onClose} className="text-white/50 hover:text-white"><X className="w-5 h-5" /></button>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+            <p className="text-sm font-medium text-white truncate">{pendingSend.file.name}</p>
+            <p className="text-xs text-white/50">{(pendingSend.file.size / 1024 / 1024).toFixed(2)} MB</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">Target Device</label>
+            <select 
+              value={selectedDevice}
+              onChange={(e) => setSelectedDevice(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-[var(--lava-300)] transition-colors"
+            >
+              {devices.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">Passkey (Optional)</label>
+            <input 
+              type="password" 
+              value={passkey}
+              onChange={(e) => setPasskey(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-[var(--lava-300)] transition-colors"
+              placeholder="Leave blank for no passkey"
+            />
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer mt-4">
+            <input 
+              type="checkbox" 
+              checked={isEphemeral} 
+              onChange={(e) => setIsEphemeral(e.target.checked)} 
+              className="accent-[var(--lava-500)]"
+            />
+            <span className="text-sm text-white/70">Burn After Reading (Ephemeral)</span>
+          </label>
+        </div>
+
+        <div className="mt-8 flex gap-3">
+          <button 
+            onClick={onClose}
+            className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-colors font-medium"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={() => {
+              onSend(selectedDevice, pendingSend.file, isEphemeral, passkey);
+              onClose();
+            }}
+            disabled={!selectedDevice}
+            className="flex-1 py-2.5 bg-[var(--lava-500)] hover:bg-[var(--lava-400)] text-white shadow-[0_0_15px_rgba(255,91,31,0.3)] rounded-xl transition-all font-medium disabled:opacity-50"
+          >
+            Send Request
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 // --- Main Page ---
 
 export default function Dashboard() {
@@ -487,7 +615,7 @@ export default function Dashboard() {
     });
 
     if (devices.length > 0) {
-      requestFileTransfer(devices[0].id, file, isEphemeral);
+      setPendingSendFile({ file });
     }
   };
 
@@ -517,6 +645,14 @@ export default function Dashboard() {
       <IncomingTransferModal />
       <EphemeralViewerModal />
       <SettingsModal show={showSettings} onClose={() => setShowSettings(false)} onSave={broadcastName} />
+      <SendFileModal 
+        pendingSend={pendingSendFile} 
+        onClose={() => setPendingSendFile(null)} 
+        onSend={(targetId, file, ephemeral, pk) => {
+          requestFileTransfer(targetId, file, ephemeral, pk);
+          alert(`Transfer requested to ${devices.find(d => d.id === targetId)?.name}! Waiting for acceptance.`);
+        }}
+      />
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div 

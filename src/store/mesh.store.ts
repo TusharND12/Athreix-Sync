@@ -33,6 +33,7 @@ export type TransferRequest = {
   fileName: string;
   fileSize: number;
   isEphemeral: boolean;
+  passkey?: string;
 };
 
 interface MeshState {
