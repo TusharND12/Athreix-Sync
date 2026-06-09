@@ -29,6 +29,7 @@ import {
 import { useMeshStore } from "@/store/mesh.store";
 import { useMesh } from "@/providers/MeshProvider";
 import { AIAssistantBar } from "./components/AIAssistant";
+import { TransferTimeline } from "./components/TransferTimeline";
 
 // --- Sub-Components ---
 
@@ -67,10 +68,18 @@ const FileCard = ({ file, delay }: { file: any, delay: number }) => {
               {file.source === 'local' ? "Available" : "Received"}
             </span>
           ) : (
-            <span className="text-yellow-400">Transferring...</span>
+            <span className="text-yellow-400">{file.progress ? `${file.progress.toFixed(0)}%` : "Transferring..."}</span>
           )}
         </div>
       </div>
+      {file.status === "transferring" && file.progress !== undefined && (
+        <div className="mt-3 h-1 bg-white/5 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[var(--lava-500)] to-[var(--lava-300)] transition-all duration-300"
+            style={{ width: `${file.progress}%` }}
+          />
+        </div>
+      )}
       {file.blobUrl && (
         <a 
           href={file.blobUrl} 
@@ -174,7 +183,7 @@ const DeviceSyncView = ({ onTriggerSend }: { onTriggerSend?: (file: File, target
       <div className="w-full py-16 flex flex-col items-center justify-center text-white/30 border border-dashed border-white/10 rounded-2xl">
         <Network className="w-12 h-12 mb-4 opacity-50" />
         <p>No devices connected in the mesh network.</p>
-        <p className="text-sm mt-2 opacity-60">Open Athreix Sync on another device or browser tab to see them here.</p>
+        <p className="text-sm mt-2 opacity-60">Open Athreix Sync on any device — same WiFi or different networks worldwide.</p>
       </div>
     );
   }
@@ -183,7 +192,14 @@ const DeviceSyncView = ({ onTriggerSend }: { onTriggerSend?: (file: File, target
     <div className="space-y-4 mt-8">
       {devices.map((device, i) => {
         const isExpanded = expandedDevice === device.id;
-        
+        const conn = device.connectionState ?? "connecting";
+        const connStyles = {
+          connecting: { bg: "bg-yellow-500/20", border: "border-yellow-500/30", icon: "text-yellow-400", label: "Connecting…" },
+          connected: { bg: "bg-green-500/20", border: "border-green-500/30", icon: "text-green-400", label: "Direct P2P • Connected" },
+          relay: { bg: "bg-[var(--lava-400)]/20", border: "border-[var(--lava-400)]/30", icon: "text-[var(--lava-300)]", label: "Cross-network relay • Connected" },
+          failed: { bg: "bg-red-500/20", border: "border-red-500/30", icon: "text-red-400", label: "Connection failed" },
+        }[conn];
+
         return (
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
@@ -195,17 +211,19 @@ const DeviceSyncView = ({ onTriggerSend }: { onTriggerSend?: (file: File, target
           >
             <div className="p-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30">
-                  <Activity className="w-6 h-6 text-green-400 animate-pulse" />
+                <div className={`w-12 h-12 rounded-full ${connStyles.bg} flex items-center justify-center border ${connStyles.border}`}>
+                  <Activity className={`w-6 h-6 ${connStyles.icon} ${conn !== "failed" ? "animate-pulse" : ""}`} />
                 </div>
                 <div>
                   <h4 className="text-white font-medium text-lg">{device.name}</h4>
-                  <p className="text-sm text-white/50">WebRTC DataChannel • Connected</p>
+                  <p className="text-sm text-white/50">WebRTC • {connStyles.label}</p>
                 </div>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-xs text-white/40 mb-1">Latency</span>
-                <span className="text-[var(--lava-300)] font-mono font-medium">~{Math.floor(Math.random() * 30 + 10)}ms</span>
+                <span className="text-xs text-white/40 mb-1">Network</span>
+                <span className="text-[var(--lava-300)] font-mono text-xs font-medium">
+                  {conn === "relay" ? "TURN" : conn === "connected" ? "P2P" : conn === "connecting" ? "…" : "—"}
+                </span>
               </div>
             </div>
 
@@ -644,6 +662,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#050505] flex">
       <IncomingTransferModal />
+      <TransferTimeline />
       <EphemeralViewerModal />
       <SettingsModal show={showSettings} onClose={() => setShowSettings(false)} onSave={broadcastName} />
       <SendFileModal 

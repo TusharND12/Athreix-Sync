@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useMeshStore } from '@/store/mesh.store';
+import { getIceServers } from '@/lib/ice-servers';
+import type { DeviceConnectionState } from '@/store/mesh.store';
 
 interface MeshContextType {
   socket: Socket | null;
@@ -57,24 +59,80 @@ async function sendBinaryChunk(dc: RTCDataChannel, data: ArrayBuffer) {
   dc.send(data);
 }
 
+function getPeerName(peerId: string) {
+  const device = useMeshStore.getState().devices.find((d) => d.id === peerId);
+  return device?.name ?? `Node_${peerId.substring(0, 4)}`;
+}
+
+const PROGRESS_UPDATE_INTERVAL = CHUNK_SIZE * 8;
+const DATA_CHANNEL_TIMEOUT_MS = 45000;
+
+async function waitForDataChannel(
+  getChannel: () => RTCDataChannel | undefined,
+  timeoutMs = DATA_CHANNEL_TIMEOUT_MS
+): Promise<RTCDataChannel> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const dc = getChannel();
+    if (dc?.readyState === "open") return dc;
+    if (dc?.readyState === "closed") break;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  throw new Error("Data channel failed to open — peer may be unreachable");
+}
+
+async function detectConnectionMode(pc: RTCPeerConnection): Promise<DeviceConnectionState> {
+  try {
+    const stats = await pc.getStats();
+    let usesRelay = false;
+    stats.forEach((report) => {
+      if (report.type === "candidate-pair" && report.state === "succeeded") {
+        const local = stats.get(report.localCandidateId as string);
+        const remote = stats.get(report.remoteCandidateId as string);
+        if (local?.candidateType === "relay" || remote?.candidateType === "relay") {
+          usesRelay = true;
+        }
+      }
+    });
+    return usesRelay ? "relay" : "connected";
+  } catch {
+    return "connected";
+  }
+}
+
 export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
   const socketRef = useRef<Socket | null>(null);
   const peersRef = useRef<{ [id: string]: RTCPeerConnection }>({});
   const dataChannelsRef = useRef<{ [id: string]: RTCDataChannel }>({});
   const pendingFilesRef = useRef<Map<string, File>>(new Map());
   const iceCandidateQueueRef = useRef<{ [id: string]: RTCIceCandidateInit[] }>({});
-  
-  const addDevice = useMeshStore((state) => state.addDevice);
-  const removeDevice = useMeshStore((state) => state.removeDevice);
-  const addFile = useMeshStore((state) => state.addFile);
+  const iceServersRef = useRef<RTCIceServer[]>(getIceServers());
 
   useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
-    const socket = socketUrl ? io(socketUrl) : io();
-    socketRef.current = socket;
+    let socket: Socket | null = null;
+    let cancelled = false;
+
+    const init = async () => {
+      try {
+        const res = await fetch("/api/ice-servers");
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled && Array.isArray(data.iceServers)) {
+            iceServersRef.current = data.iceServers;
+          }
+        }
+      } catch {
+        iceServersRef.current = getIceServers();
+      }
+
+      if (cancelled) return;
+
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+      socket = socketUrl ? io(socketUrl) : io();
+      socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("Connected to signaling server as:", socket.id);
+      console.log("Connected to signaling server as:", socket!.id);
     });
 
     socket.on("connect_error", (err) => {
@@ -83,9 +141,9 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
 
     socket.on("device:joined", async ({ id }) => {
       console.log("Device joined:", id);
-      useMeshStore.getState().addDevice({ id, name: `Node_${id.substring(0, 4)}` });
+      useMeshStore.getState().addDevice({ id, name: `Node_${id.substring(0, 4)}`, connectionState: "connecting" });
       
-      const pc = createPeerConnection(id, socket);
+      const pc = createPeerConnection(id, socket!);
       
       const dc = pc.createDataChannel("fileTransfer", { ordered: true });
       configureDataChannel(dc);
@@ -95,7 +153,7 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       
-      socket.emit("signal", {
+      socket!.emit("signal", {
         target: id,
         signal: { type: "offer", sdp: offer.sdp }
       });
@@ -117,15 +175,15 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     socket.on("signal", async (data) => {
       let pc = peersRef.current[data.sender];
       if (!pc) {
-        useMeshStore.getState().addDevice({ id: data.sender, name: `Node_${data.sender.substring(0, 4)}` });
-        pc = createPeerConnection(data.sender, socket);
+        useMeshStore.getState().addDevice({ id: data.sender, name: `Node_${data.sender.substring(0, 4)}`, connectionState: "connecting" });
+        pc = createPeerConnection(data.sender, socket!);
       }
       
       if (data.signal.type === "offer") {
         await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
-        socket.emit("signal", { 
+        socket!.emit("signal", { 
           target: data.sender, 
           signal: { type: "answer", sdp: answer.sdp } 
         });
@@ -176,7 +234,7 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
         const isEphemeral = (file as any)?.isEphemeral;
         
         if (file) {
-          sendFile(data.sender, file, isEphemeral);
+          sendFile(data.sender, file, isEphemeral, data.fileId);
           pendingFilesRef.current.delete(data.fileId);
         }
       } else {
@@ -184,22 +242,48 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
         pendingFilesRef.current.delete(data.fileId);
       }
     });
+    };
+
+    init();
 
     return () => {
-      socket.disconnect();
+      cancelled = true;
+      socket?.disconnect();
     };
   }, []);
 
   const createPeerConnection = (targetId: string, socket: Socket) => {
     const pc = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      iceServers: iceServersRef.current,
+      iceCandidatePoolSize: 10,
     });
 
     peersRef.current[targetId] = pc;
+    useMeshStore.getState().updateDeviceConnection(targetId, "connecting");
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         socket.emit("signal", { target: targetId, signal: event.candidate });
+      }
+    };
+
+    pc.oniceconnectionstatechange = async () => {
+      const state = pc.iceConnectionState;
+      if (state === "connected" || state === "completed") {
+        const mode = await detectConnectionMode(pc);
+        useMeshStore.getState().updateDeviceConnection(targetId, mode);
+      } else if (state === "checking" || state === "disconnected") {
+        useMeshStore.getState().updateDeviceConnection(targetId, "connecting");
+      } else if (state === "failed") {
+        useMeshStore.getState().updateDeviceConnection(targetId, "failed");
+        useMeshStore.getState().addNotification(
+          `Connection to ${getPeerName(targetId)} failed — retrying via relay…`
+        );
+        try {
+          pc.restartIce();
+        } catch (err) {
+          console.error("ICE restart failed:", err);
+        }
       }
     };
 
@@ -273,6 +357,7 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
         } else if (parsed.type === "file_end") {
           if (receivingMetadata && parsed.id === receivingMetadata.id) {
             finalizeReceivedFile(targetId, receivingMetadata, receivedBuffers);
+            useMeshStore.getState().completeTransfer(parsed.id);
             receivingMetadata = null;
             receivedBuffers = [];
             receivedSize = 0;
@@ -282,6 +367,15 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
           receivingMetadata = parsed;
           receivedBuffers = [];
           receivedSize = 0;
+          useMeshStore.getState().startTransfer({
+            id: parsed.id,
+            fileName: parsed.name,
+            fileSize: parsed.size,
+            direction: 'receive',
+            peerId: targetId,
+            peerName: getPeerName(targetId),
+            status: 'transferring',
+          });
           return;
         }
       } else if (event.data instanceof ArrayBuffer) {
@@ -290,8 +384,13 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
         receivedBuffers.push(event.data);
         receivedSize += event.data.byteLength;
 
+        if (receivedSize % PROGRESS_UPDATE_INTERVAL < CHUNK_SIZE || receivedSize >= receivingMetadata.size) {
+          useMeshStore.getState().updateTransferProgress(receivingMetadata.id, receivedSize);
+        }
+
         if (receivedSize >= receivingMetadata.size) {
           finalizeReceivedFile(targetId, receivingMetadata, receivedBuffers);
+          useMeshStore.getState().completeTransfer(receivingMetadata.id);
           receivingMetadata = null;
           receivedBuffers = [];
           receivedSize = 0;
@@ -309,6 +408,16 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     (file as any).isEphemeral = isEphemeral;
     pendingFilesRef.current.set(fileId, file);
     
+    useMeshStore.getState().startTransfer({
+      id: fileId,
+      fileName: file.name,
+      fileSize: file.size,
+      direction: 'send',
+      peerId: targetId,
+      peerName: getPeerName(targetId),
+      status: 'pending',
+    });
+
     socket.emit("file:request", {
       target: targetId,
       fileId,
@@ -327,15 +436,30 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
     useMeshStore.getState().removeTransferRequest(fileId);
   };
 
-  const sendFile = async (targetId: string, file: File, isEphemeral: boolean = false) => {
-    const dc = dataChannelsRef.current[targetId];
-    if (!dc || dc.readyState !== "open") {
-      console.error("Data channel not open to", targetId);
-      useMeshStore.getState().addNotification("Transfer failed: connection not ready");
+  const sendFile = async (targetId: string, file: File, isEphemeral: boolean = false, transferId?: string) => {
+    const fileId = transferId ?? Math.random().toString();
+
+    let dc: RTCDataChannel;
+    try {
+      dc = await waitForDataChannel(() => dataChannelsRef.current[targetId]);
+    } catch (err) {
+      console.error("Data channel not open to", targetId, err);
+      useMeshStore.getState().addNotification(
+        "Transfer failed: could not reach peer. Ensure both devices are online and try again."
+      );
+      useMeshStore.getState().failTransfer(fileId);
       return;
     }
 
-    const fileId = Math.random().toString();
+    useMeshStore.getState().startTransfer({
+      id: fileId,
+      fileName: file.name,
+      fileSize: file.size,
+      direction: 'send',
+      peerId: targetId,
+      peerName: getPeerName(targetId),
+      status: 'transferring',
+    });
 
     try {
       dc.send(JSON.stringify({
@@ -351,14 +475,20 @@ export const MeshProvider = ({ children }: { children: React.ReactNode }) => {
       while (offset < file.size) {
         const chunk = await file.slice(offset, offset + CHUNK_SIZE).arrayBuffer();
         await sendBinaryChunk(dc, chunk);
-        offset += CHUNK_SIZE;
+        offset = Math.min(offset + CHUNK_SIZE, file.size);
+
+        if (offset % PROGRESS_UPDATE_INTERVAL < CHUNK_SIZE || offset >= file.size) {
+          useMeshStore.getState().updateTransferProgress(fileId, offset);
+        }
       }
 
       await waitForBuffer(dc);
       dc.send(JSON.stringify({ type: "file_end", id: fileId }));
+      useMeshStore.getState().completeTransfer(fileId);
       useMeshStore.getState().addNotification(`Sent ${file.name} successfully`);
     } catch (err) {
       console.error("File transfer failed:", err);
+      useMeshStore.getState().failTransfer(fileId);
       useMeshStore.getState().addNotification(`Failed to send ${file.name}`);
     }
   };
