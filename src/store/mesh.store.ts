@@ -52,6 +52,7 @@ interface MeshState {
   setFiles: (files: FileState[]) => void;
   addNotification: (msg: string) => void;
   markNotificationsRead: () => void;
+  clearNotifications: () => void;
   addTransferRequest: (req: TransferRequest) => void;
   removeTransferRequest: (id: string) => void;
   setClipboardText: (text: string) => void;
@@ -91,6 +92,7 @@ export const useMeshStore = create<MeshState>((set) => ({
   markNotificationsRead: () => set((state) => ({
     notifications: state.notifications.map(n => ({ ...n, read: true }))
   })),
+  clearNotifications: () => set({ notifications: [] }),
   addTransferRequest: (req) => set((state) => ({
     transferRequests: [...state.transferRequests, req]
   })),

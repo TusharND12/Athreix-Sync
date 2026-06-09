@@ -551,6 +551,7 @@ export default function Dashboard() {
   const notifications = useMeshStore((state) => state.notifications);
   const clipboardText = useMeshStore((state) => state.clipboardText);
   const markNotificationsRead = useMeshStore((state) => state.markNotificationsRead);
+  const clearNotifications = useMeshStore((state) => state.clearNotifications);
   const addFile = useMeshStore((state) => state.addFile);
   const { requestFileTransfer, broadcastClipboard, broadcastName } = useMesh();
 
@@ -798,15 +799,26 @@ export default function Dashboard() {
 
               <AnimatePresence>
                 {showNotifications && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-4 w-80 glass-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50"
-                  >
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40"
+                      onClick={() => {
+                        setShowNotifications(false);
+                        markNotificationsRead();
+                      }}
+                    />
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-4 w-80 glass-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50"
+                    >
                     <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
                       <h4 className="text-white font-medium">Notifications</h4>
-                      <button onClick={markNotificationsRead} className="text-xs text-[var(--lava-300)] hover:underline">Mark all read</button>
+                      <div className="flex gap-3">
+                        <button onClick={markNotificationsRead} className="text-xs text-[var(--lava-300)] hover:underline">Mark read</button>
+                        <button onClick={clearNotifications} className="text-xs text-white/40 hover:text-white hover:underline">Clear all</button>
+                      </div>
                     </div>
                     <div className="max-h-64 overflow-y-auto">
                       {notifications.length === 0 ? (
