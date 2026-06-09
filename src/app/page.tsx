@@ -20,7 +20,11 @@ import {
   WifiOff,
   EyeOff,
   Menu,
-  X
+  X,
+  ShieldCheck,
+  Copy,
+  Search,
+  Infinity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -201,34 +205,34 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: any) => (
 const Features = () => {
   const features = [
     {
-      icon: Cpu,
-      title: "AI Intent Sharing",
-      description: "Type 'send the presentation to the design team'. Our AI finds the file, identifies the team, and delivers it instantly."
-    },
-    {
       icon: Network,
-      title: "Device Mesh Network",
-      description: "Your devices form a private P2P network. Files route intelligently directly between them, bypassing the cloud for maximum speed."
-    },
-    {
-      icon: Box,
-      title: "Spatial Workspace",
-      description: "Folders are dead. Navigate your files in an AI-organized 3D space. Projects cluster naturally, and everything is visual."
+      title: "Real-time WebRTC Mesh",
+      description: "Connect devices instantly. Files transfer directly over P2P data channels, completely bypassing the cloud for maximum speed."
     },
     {
       icon: EyeOff,
-      title: "Self-Destruct Modes",
-      description: "Send sensitive documents that permanently vaporize after a single view, download, or specified time limit."
+      title: "Burn After Reading",
+      description: "Send classified transmissions. Your sensitive files permanently vaporize from the receiver's device the moment they are closed."
     },
     {
-      icon: WifiOff,
-      title: "Offline Mesh Sync",
-      description: "No internet? No problem. Transfer files via local WiFi direct or Bluetooth when you're off the grid."
+      icon: ShieldCheck,
+      title: "Zero-Knowledge Passkeys",
+      description: "Secure your transfers. Require the receiver to enter an exact matching passkey before they can accept and download your files."
     },
     {
-      icon: Zap,
-      title: "Live Streaming Transfers",
-      description: "Start watching videos or reading PDFs instantly before the transfer even completes. Zero wait time."
+      icon: Copy,
+      title: "Universal Clipboard",
+      description: "Copy on your phone, paste on your desktop. Broadcast your clipboard text instantly to every device in your personal mesh."
+    },
+    {
+      icon: Search,
+      title: "Instant Peer Discovery",
+      description: "No pairing, no QR codes. Devices on your network find each other automatically so you can start sharing in seconds."
+    },
+    {
+      icon: Infinity,
+      title: "Unlimited File Sizes",
+      description: "No arbitrary cloud limits. Because files travel directly from device to device, you can transfer massive files with zero compression."
     }
   ];
 
