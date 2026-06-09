@@ -1,0 +1,344 @@
+"use client";
+
+import { useRef, useState, useEffect } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Points, PointMaterial } from "@react-three/drei";
+// @ts-ignore
+import * as random from "maath/random/dist/maath-random.esm";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { 
+  Share2, 
+  Globe, 
+  Shield, 
+  Zap, 
+  Cpu, 
+  Box, 
+  Network, 
+  ArrowRight,
+  Fingerprint,
+  WifiOff,
+  EyeOff
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+function Starfield(props: any) {
+  const ref = useRef<any>(null);
+  const [sphere] = useState(() => random.inSphere(new Float32Array(5001), { radius: 1.5 }));
+
+  useFrame((state, delta) => {
+    ref.current.rotation.x -= delta / 10;
+    ref.current.rotation.y -= delta / 15;
+  });
+
+  return (
+    <group rotation={[0, 0, Math.PI / 4]}>
+      <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
+        <PointMaterial
+          transparent
+          color="#00f0ff"
+          size={0.005}
+          sizeAttenuation={true}
+          depthWrite={false}
+        />
+      </Points>
+    </group>
+  );
+}
+
+const NavBar = () => (
+  <nav className="fixed top-0 left-0 right-0 z-50 glass border-b-0 border-white/5 py-4 px-6 md:px-12 flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00f0ff] to-[#8a2be2] flex items-center justify-center">
+        <Network className="w-4 h-4 text-white" />
+      </div>
+      <span className="text-xl font-bold tracking-tight">AthreixSync</span>
+    </div>
+    
+    <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
+      <a href="#features" className="hover:text-white transition-colors">Features</a>
+      <a href="#mesh" className="hover:text-white transition-colors">Mesh Network</a>
+      <a href="#security" className="hover:text-white transition-colors">Security</a>
+      <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+    </div>
+
+    <div className="flex items-center gap-4">
+      <button className="hidden md:block text-sm font-medium hover:text-white text-white/70 transition-colors">
+        Log in
+      </button>
+      <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-semibold hover:bg-white/90 transition-transform active:scale-95">
+        Get Early Access
+      </button>
+    </div>
+  </nav>
+);
+
+const Hero = () => {
+  return (
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20">
+      <div className="absolute inset-0 z-0 opacity-40">
+        <Canvas camera={{ position: [0, 0, 1] }}>
+          <Starfield />
+        </Canvas>
+      </div>
+
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-[#050505]/80 to-[#050505] z-10 pointer-events-none" />
+
+      <div className="relative z-20 text-center px-4 max-w-5xl mx-auto flex flex-col items-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8"
+        >
+          <span className="w-2 h-2 rounded-full bg-[#00f0ff] animate-pulse" />
+          <span className="text-xs font-medium text-white/80 uppercase tracking-wider">AthreixSync v1.0 Launching Soon</span>
+        </motion.div>
+
+        <motion.h1 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+          className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter leading-[1.1] mb-6"
+        >
+          Share at the speed <br className="hidden md:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-[#8a2be2] to-[#e0aaff]">
+            of thought.
+          </span>
+        </motion.h1>
+
+        <motion.p 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          className="text-lg md:text-xl text-white/60 max-w-2xl mb-10 leading-relaxed font-light"
+        >
+          The world's first intent-driven, AI-native file sharing ecosystem. No links. No uploads. No friction. Just point, think, and transfer.
+        </motion.p>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+          className="flex flex-col sm:flex-row items-center gap-4"
+        >
+          <Link href="/dashboard">
+            <button className="h-14 px-8 rounded-full bg-white text-black font-semibold text-lg hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)] flex items-center gap-2 group">
+              Open Web App
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </Link>
+          <button className="h-14 px-8 rounded-full glass font-medium text-lg hover:bg-white/10 transition-colors flex items-center gap-2">
+            Download for Mac
+          </button>
+        </motion.div>
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2, delay: 1 }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20 opacity-50"
+      >
+        <span className="text-xs uppercase tracking-widest font-mono">Scroll to explore</span>
+        <div className="w-px h-12 bg-gradient-to-b from-white/50 to-transparent" />
+      </motion.div>
+    </section>
+  );
+};
+
+const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: any) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, margin: "-100px" }}
+    transition={{ duration: 0.5, delay }}
+    className="glass-card p-8 rounded-3xl relative overflow-hidden group hover:border-[#8a2be2]/50 transition-colors"
+  >
+    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#8a2be2]/20 to-transparent rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#00f0ff]/20 transition-colors duration-700" />
+    <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center mb-6 relative z-10 border border-white/10 group-hover:border-[#00f0ff]/50 transition-colors">
+      <Icon className="w-6 h-6 text-white" />
+    </div>
+    <h3 className="text-xl font-semibold mb-3 text-white">{title}</h3>
+    <p className="text-white/60 leading-relaxed font-light">{description}</p>
+  </motion.div>
+);
+
+const Features = () => {
+  const features = [
+    {
+      icon: Cpu,
+      title: "AI Intent Sharing",
+      description: "Type 'send the presentation to the design team'. Our AI finds the file, identifies the team, and delivers it instantly."
+    },
+    {
+      icon: Network,
+      title: "Device Mesh Network",
+      description: "Your devices form a private P2P network. Files route intelligently directly between them, bypassing the cloud for maximum speed."
+    },
+    {
+      icon: Box,
+      title: "Spatial Workspace",
+      description: "Folders are dead. Navigate your files in an AI-organized 3D space. Projects cluster naturally, and everything is visual."
+    },
+    {
+      icon: EyeOff,
+      title: "Self-Destruct Modes",
+      description: "Send sensitive documents that permanently vaporize after a single view, download, or specified time limit."
+    },
+    {
+      icon: WifiOff,
+      title: "Offline Mesh Sync",
+      description: "No internet? No problem. Transfer files via local WiFi direct or Bluetooth when you're off the grid."
+    },
+    {
+      icon: Zap,
+      title: "Live Streaming Transfers",
+      description: "Start watching videos or reading PDFs instantly before the transfer even completes. Zero wait time."
+    }
+  ];
+
+  return (
+    <section id="features" className="py-32 px-4 md:px-12 max-w-7xl mx-auto relative z-20">
+      <div className="text-center mb-20">
+        <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-6">File sharing, <span className="text-gradient">reimagined.</span></h2>
+        <p className="text-lg text-white/50 max-w-2xl mx-auto">We ripped out the friction of URLs, permissions, and uploads to build a system that moves at the speed of thought.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {features.map((f, i) => (
+          <FeatureCard key={i} {...f} delay={i * 0.1} />
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const AIPromo = () => {
+  return (
+    <section className="py-32 px-4 relative z-20 border-y border-white/5 bg-[#0a0a0f]">
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+        <div className="flex-1 space-y-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-sm font-medium">
+            <Cpu className="w-4 h-4" />
+            Core Intelligence
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+            An assistant that <br/>
+            <span className="text-gradient-purple">never forgets.</span>
+          </h2>
+          <p className="text-lg text-white/60 font-light leading-relaxed">
+            AthreixSync indexes every file, conversation, and context. Just ask, "Show me the PDF I sent to Rahul before the marketing event," and it appears instantly.
+          </p>
+          <ul className="space-y-4">
+            {["Semantic Search", "Auto-Categorization", "Duplicate Detection", "Content Summarization"].map((item, i) => (
+              <li key={i} className="flex items-center gap-3 text-white/80">
+                <div className="w-6 h-6 rounded-full bg-[#8a2be2]/20 flex items-center justify-center border border-[#8a2be2]/50">
+                  <div className="w-2 h-2 rounded-full bg-[#8a2be2]" />
+                </div>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        <div className="flex-1 w-full max-w-md relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#00f0ff]/20 to-[#8a2be2]/20 blur-3xl -z-10 rounded-full" />
+          <div className="glass-card rounded-3xl p-6 border border-white/10 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00f0ff] to-[#8a2be2]" />
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-white/10 flex-shrink-0" />
+                <div className="glass px-4 py-3 rounded-2xl rounded-tl-sm text-sm text-white/90 border border-white/5">
+                  Find the Q3 roadmap video I shared with Sarah last Tuesday.
+                </div>
+              </div>
+              <div className="flex items-start gap-4 flex-row-reverse">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00f0ff] to-[#8a2be2] flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+                <div className="glass px-4 py-3 rounded-2xl rounded-tr-sm border border-purple-500/30 bg-purple-500/5">
+                  <div className="text-sm text-white/90 mb-3">Found it in the Product Zone.</div>
+                  <div className="flex items-center gap-3 p-2 bg-black/40 rounded-xl border border-white/10">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                      <Box className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Q3_Roadmap_Final.mp4</div>
+                      <div className="text-xs text-white/50">Shared with Sarah • 854 MB</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Security = () => (
+  <section id="security" className="py-32 px-4 max-w-5xl mx-auto relative z-20 text-center">
+    <Shield className="w-16 h-16 text-white/20 mx-auto mb-8" />
+    <h2 className="text-3xl md:text-5xl font-bold mb-6">Zero Knowledge. <br/><span className="text-white/40">Absolute Control.</span></h2>
+    <p className="text-lg text-white/50 max-w-2xl mx-auto mb-12">
+      Your files are encrypted on your device before they ever touch the network. Only you and your intended recipients hold the keys. Not even we can see what you share.
+    </p>
+    <div className="flex flex-wrap justify-center gap-4">
+      <div className="glass px-6 py-3 rounded-full border border-white/10 text-sm font-medium text-white/80">End-to-End Encrypted</div>
+      <div className="glass px-6 py-3 rounded-full border border-white/10 text-sm font-medium text-white/80">Passkey Authentication</div>
+      <div className="glass px-6 py-3 rounded-full border border-white/10 text-sm font-medium text-white/80">Perfect Forward Secrecy</div>
+    </div>
+  </section>
+);
+
+const Footer = () => (
+  <footer className="border-t border-white/5 pt-16 pb-8 px-6 md:px-12 relative z-20 bg-black">
+    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#00f0ff] to-[#8a2be2] flex items-center justify-center">
+            <Network className="w-3 h-3 text-white" />
+          </div>
+          <span className="text-lg font-bold">AthreixSync</span>
+        </div>
+        <p className="text-white/50 text-sm max-w-xs">The intelligent, spatial, and secure file sharing network for the future.</p>
+      </div>
+      <div className="flex gap-16">
+        <div className="flex flex-col gap-3">
+          <span className="font-semibold text-white mb-2">Product</span>
+          <a href="#" className="text-sm text-white/60 hover:text-white">Download</a>
+          <a href="#" className="text-sm text-white/60 hover:text-white">Pricing</a>
+          <a href="#" className="text-sm text-white/60 hover:text-white">Security</a>
+        </div>
+        <div className="flex flex-col gap-3">
+          <span className="font-semibold text-white mb-2">Company</span>
+          <a href="#" className="text-sm text-white/60 hover:text-white">About</a>
+          <a href="#" className="text-sm text-white/60 hover:text-white">Blog</a>
+          <a href="#" className="text-sm text-white/60 hover:text-white">Careers</a>
+        </div>
+      </div>
+    </div>
+    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10 text-xs text-white/40">
+      <p>© 2026 AthreixSync. All rights reserved.</p>
+      <div className="flex gap-4 mt-4 md:mt-0">
+        <a href="#" className="hover:text-white">Privacy Policy</a>
+        <a href="#" className="hover:text-white">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+);
+
+export default function Home() {
+  return (
+    <main className="bg-[#050505] min-h-screen text-foreground selection:bg-purple-500/30">
+      <NavBar />
+      <Hero />
+      <Features />
+      <AIPromo />
+      <Security />
+      <Footer />
+    </main>
+  );
+}
