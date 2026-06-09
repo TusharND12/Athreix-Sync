@@ -280,36 +280,31 @@ const AIPromo = () => {
           </ul>
         </div>
         
-        <div className="flex-1 w-full max-w-md relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-[var(--lava-400)]/20 to-[var(--lava-300)]/20 blur-3xl -z-10 rounded-full" />
-          <div className="glass-card rounded-3xl p-6 border border-white/10 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ff5b1f] to-[#ff9a4a]" />
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex-shrink-0" />
-                <div className="glass px-4 py-3 rounded-2xl rounded-tl-sm text-sm text-white/90 border border-white/5">
-                  Find the Q3 roadmap video I shared with Sarah last Tuesday.
+        <div className="flex-1 w-full max-w-md relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--lava-400)]/20 to-[var(--lava-300)]/20 blur-3xl -z-10 rounded-full group-hover:opacity-100 opacity-70 transition-opacity" />
+          <a href="https://www.athreix.com/" target="_blank" rel="noreferrer" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
+            <div className="glass-card rounded-3xl p-6 border border-white/10 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ff5b1f] to-[#ff9a4a]" />
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex-shrink-0" />
+                  <div className="glass px-4 py-3 rounded-2xl rounded-tl-sm text-sm text-white/90 border border-white/5 font-bold uppercase tracking-widest text-center flex items-center justify-center">
+                    BUILT BY
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-4 flex-row-reverse">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-5 h-5 text-white" />
-                </div>
-                <div className="glass px-4 py-3 rounded-2xl rounded-tr-sm border border-[var(--lava-300)]/30 bg-[var(--lava-300)]/5">
-                  <div className="text-sm text-white/90 mb-3">Found it in the Product Zone.</div>
-                  <div className="flex items-center gap-3 p-2 bg-black/40 rounded-xl border border-white/10">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                      <Box className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium">Q3_Roadmap_Final.mp4</div>
-                      <div className="text-xs text-white/50">Shared with Sarah • 854 MB</div>
-                    </div>
+                <div className="flex items-start gap-4 flex-row-reverse">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff5b1f] to-[#ff9a4a] flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="glass px-6 py-4 rounded-2xl rounded-tr-sm border border-[var(--lava-300)]/30 bg-[var(--lava-300)]/5 flex items-center justify-center">
+                    <span className="text-xl font-bold tracking-[0.3em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#ff5b1f] to-[#ff9a4a] animate-pulse">
+                      ATHREIX.COM
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </a>
         </div>
       </div>
     </section>
